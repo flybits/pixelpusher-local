@@ -1,0 +1,21 @@
+@use "sass:color";
+
+@function lighten($color, $amount) {
+  @return color.adjust($color, $lightness: $amount);
+}
+
+@function darken($color, $amount) {
+  @return color.adjust($color, $lightness: -$amount);
+}
+
+/// $amount: share of white (lighten) or black (darken) in the mix, e.g. 5% => subtle tint.
+/// Works with any CSS `<color>` the browser understands, including `var(--token)`.
+@function mix-lighten($color, $amount) {
+  $base: 100% - $amount;
+  @return color-mix(in srgb, $color $base, white $amount);
+}
+
+@function mix-darken($color, $amount) {
+  $base: 100% - $amount;
+  @return color-mix(in srgb, $color $base, black $amount);
+}

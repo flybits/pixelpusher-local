@@ -1,0 +1,45 @@
+{
+  "name": "pixelpusher",
+  "version": "0.0.0",
+  "description": "Lit web component (pixel-pusher). Default build keeps lit external; optional dist/pixel-pusher.bundle.js includes lit for single-file use.",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/pixel-pusher.js",
+  "module": "./dist/pixel-pusher.js",
+  "types": "./dist/src/pixel-pusher.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/pixel-pusher.d.ts",
+      "import": "./dist/pixel-pusher.js",
+      "default": "./dist/pixel-pusher.js"
+    },
+    "./bundle": {
+      "types": "./dist/src/pixel-pusher.d.ts",
+      "import": "./dist/pixel-pusher.bundle.js",
+      "default": "./dist/pixel-pusher.bundle.js"
+    }
+  },
+  "sideEffects": [
+    "./dist/pixel-pusher.js",
+    "./dist/pixel-pusher.bundle.js"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:lib": "vite build --config vite.lib.config.ts && vite build --config vite.lib.bundle.config.ts",
+    "preview": "vite preview --outDir dist-app",
+    "prepublishOnly": "npm run build:lib"
+  },
+  "dependencies": {
+    "lit": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "sass": "^1.99.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.4",
+    "vite-plugin-dts": "^4.5.4"
+  }
+}
