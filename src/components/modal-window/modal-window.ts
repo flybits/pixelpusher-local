@@ -1,5 +1,5 @@
 import { LitElement, html, unsafeCSS, nothing } from 'lit'
-import { customElement, property } from 'lit/decorators.js'
+import { customElement, property, state } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { classMap } from 'lit/directives/class-map.js'
 import elementStyles from './modal-window.scss?inline'
@@ -8,7 +8,9 @@ import closeIcon from '@/assets/close.svg'
 
 @customElement('modal-window')
 export class ModalWindow extends LitElement {
-  private modalWindowRef = createRef<HTMLDivElement>()
+  private modalWindowRef = createRef<HTMLDialogElement>()
+  
+  @state()
   private isOpen = false
 
   @property({ type: String })
@@ -17,23 +19,48 @@ export class ModalWindow extends LitElement {
   @property({ type: Boolean })
   dismissible = false
 
+  private _onDialogClose() {
+    if(this.isOpen){
+      this.modalWindowRef.value?.showModal();
+    }
+  }
+
+  private _onDialogCancel(e: Event) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+  
+  open() {
+    this.modalWindowRef.value?.showModal()
+    this.isOpen = true
+  }
+
+  close() {
+    this.isOpen = false
+    setTimeout(() => {
+      this.modalWindowRef.value?.close()
+    }, 200)
+  }
+
   render() {
     return html`
       <dialog 
         class=${classMap({
-          'modal-window': true,
+          'modal-dialog': true,
           'open': this.isOpen
         })} 
         ${ref(this.modalWindowRef)}
+        @close=${this._onDialogClose}
+        @cancel.capture=${this._onDialogCancel}
       >
-        <div class="modal-overlay"/>
+        <div class="modal-overlay"></div>
         <div class="modal-content">
           <div class="modal-header">
             <slot name="header">
               <div class="header-title">${this.title}</div>
             </slot>
             ${this.dismissible ? html`  
-              <button class="close-btn" @click="close">
+              <button class="close-btn" @click=${this.close}>
                 <img src=${closeIcon} alt="Close" class="close-icon" />
               </button>
             ` : nothing }
