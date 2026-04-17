@@ -43,6 +43,12 @@ export class PixelPusher extends LitElement {
   @property({ type: Number })
   quality = 0.92;
 
+  /**
+   * Title of the crop modal
+   */
+  @property({ type: String })
+  cropModalTitle = 'Crop Image';
+
   private _croppedFile: File | null = null;
   private _croppedBlob: Blob | null = null;
   
@@ -81,7 +87,9 @@ export class PixelPusher extends LitElement {
     if(this.croppedPreviewURL){
       URL.revokeObjectURL(this.croppedPreviewURL);
     }
-    this.croppedPreviewURL = URL.createObjectURL(this._croppedBlob);
+    if(this._croppedBlob){
+      this.croppedPreviewURL = URL.createObjectURL(this._croppedBlob);
+    }
   }
 
   private _emitEvt<T>(name: string, detail?: T) {
@@ -110,7 +118,7 @@ export class PixelPusher extends LitElement {
         </div>
         <cropper-window 
           ${ref(this.cropperWindowRef)}
-          title="Crop Image" 
+          title=${this.cropModalTitle} 
           @image-cropped=${this._onImageCropped}
         />
       </div>
