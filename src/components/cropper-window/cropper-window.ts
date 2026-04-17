@@ -7,7 +7,7 @@ import { resizeCanvas } from '@/utils/canvas.ts'
 import elementStyles from './cropper-window.scss?inline'
 import { ModalWindow } from '@/components/modal-window/modal-window.ts'
 
-export type CroppedImageEvent = CustomEvent<File>
+export type CroppedImageEvent = CustomEvent<{ blob: Blob, file: File }>
 
 export type CropOptions = {
   aspectRatio: number
@@ -133,6 +133,6 @@ declare global {
   }
 
   interface HTMLElementEventMap {
-    'image-cropped': CustomEvent<CroppedImageEvent>
+    'image-cropped': CroppedImageEvent
   }
 }

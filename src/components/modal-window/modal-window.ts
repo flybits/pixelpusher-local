@@ -96,6 +96,6 @@ declare global {
   }
 
   interface HTMLElementEventMap {
-    'modal-close': CustomEvent<void>
+    'modal-close': ModalWindowCloseEvent
   }
 }

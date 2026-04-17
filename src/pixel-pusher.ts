@@ -5,7 +5,7 @@ import uploadIcon from './assets/upload.svg'
 import elementStyles from './pixel-pusher.scss?inline'
 
 import { pickFile } from './utils/file'
-import { CropperWindow } from '@/components/cropper-window/cropper-window.ts'
+import { CropperWindow, type CroppedImageEvent } from '@/components/cropper-window/cropper-window.ts'
 
 export type PixelPusherFileSelectEvent = CustomEvent<File>
 
@@ -103,15 +103,21 @@ export class PixelPusher extends LitElement {
     }
   }
 
-  private _onImageCropped(event: CustomEvent<CroppedImageEvent>) {
-    this._croppedFile = event.detail?.file;
-    this._croppedBlob = event.detail?.blob;
+  private _onImageCropped(event: CroppedImageEvent) {
+    this._croppedFile = event.detail?.file ?? null;
+    this._croppedBlob = event.detail?.blob ?? null;
     if(this.croppedPreviewURL){
       URL.revokeObjectURL(this.croppedPreviewURL);
     }
     if(this._croppedBlob){
       this.croppedPreviewURL = URL.createObjectURL(this._croppedBlob);
       this._updateChildPreviews();
+
+      event.stopPropagation();
+      this._emitEvt('image-cropped', { 
+        blob: this._croppedBlob, 
+        file: this._croppedFile 
+      });
     }
   }
 
@@ -157,6 +163,6 @@ declare global {
   }
 
   interface HTMLElementEventMap {
-    'file-selected': CustomEvent<File>
+    'file-selected': PixelPusherFileSelectEvent,
   }
 }
