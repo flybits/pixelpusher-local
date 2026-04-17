@@ -65,9 +65,14 @@ export class CropperWindow extends LitElement {
 
   private initCropper(img: HTMLImageElement) {
     if(this.cropperWrapperRef.value){
+
       this.cropper = new Cropper(img, {
         container: this.cropperWrapperRef.value,
       });
+
+      if(this.cropOpts?.aspectRatio){
+        this.cropper.getCropperSelection().aspectRatio = this.cropOpts.aspectRatio;
+      }
     }
   }
 
