@@ -1,4 +1,4 @@
-import { LitElement, html, nothing, unsafeCSS } from 'lit'
+import { LitElement, html, unsafeCSS } from 'lit'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { customElement, property, state } from 'lit/decorators.js'
 import uploadIcon from './assets/upload.svg'
@@ -88,18 +88,19 @@ export class PixelPusher extends LitElement {
   }
 
   private _updateChildPreviews() {
-    if(this.defaultSlotContent && this.croppedPreviewURL){
+    const previewUrl = this.croppedPreviewURL
+    if(this.defaultSlotContent && previewUrl){
       if(this.defaultSlotContent instanceof HTMLImageElement && this.defaultSlotContent.hasAttribute('data-pp-preview')){
-        this.defaultSlotContent.src = this.croppedPreviewURL;
+        this.defaultSlotContent.src = previewUrl;
       } else if(this.defaultSlotContent instanceof HTMLElement && this.defaultSlotContent.hasAttribute('data-pp-preview')){
-        this.defaultSlotContent.style.backgroundImage = `url(${this.croppedPreviewURL})`;
+        this.defaultSlotContent.style.backgroundImage = `url(${previewUrl})`;
       }
       
       this.defaultSlotContent.querySelectorAll('img[data-pp-preview]').forEach(img => {
-        (img as HTMLImageElement).src = this.croppedPreviewURL;
+        (img as HTMLImageElement).src = previewUrl;
       });
       this.defaultSlotContent.querySelectorAll('div[data-pp-preview]').forEach(div => {
-        (div as HTMLElement).style.backgroundImage = `url(${this.croppedPreviewURL})`;
+        (div as HTMLElement).style.backgroundImage = `url(${previewUrl})`;
       });
     }
   }

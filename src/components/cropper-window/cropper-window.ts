@@ -1,7 +1,6 @@
-import { LitElement, html, unsafeCSS, nothing } from 'lit'
-import { customElement, property, state } from 'lit/decorators.js'
+import { LitElement, html, unsafeCSS } from 'lit'
+import { customElement } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
-import { classMap } from 'lit/directives/class-map.js'
 import Cropper from 'cropperjs'
 import { resizeCanvas } from '@/utils/canvas.ts'
 import elementStyles from './cropper-window.scss?inline'
@@ -36,10 +35,10 @@ export class CropperWindow extends LitElement {
       this.img = new Image();
       this.img.src = URL.createObjectURL(file);
       this.img.onload = () => {
-        this.initCropper(this.img);
+        if (this.img) this.initCropper(this.img)
       }
-      this.img.onerror = (error: Event) => {
-        console.error('error', error)
+      this.img.onerror = () => {
+        console.error('image load error')
       }
     } else{
       console.error('no file provided');
@@ -70,8 +69,9 @@ export class CropperWindow extends LitElement {
         container: this.cropperWrapperRef.value,
       });
 
-      if(this.cropOpts?.aspectRatio){
-        this.cropper.getCropperSelection().aspectRatio = this.cropOpts.aspectRatio;
+      const cropSelection = this.cropper.getCropperSelection()
+      if (cropSelection && this.cropOpts?.aspectRatio) {
+        cropSelection.aspectRatio = this.cropOpts.aspectRatio
       }
     }
   }
@@ -81,19 +81,27 @@ export class CropperWindow extends LitElement {
   
     const selection = this.cropper.getCropperSelection();
     if (!selection) return;
-  
+    const sourceFile = this.file
+    if (!sourceFile) return
+
     let canvas = await selection.$toCanvas()
-    canvas = resizeCanvas(canvas, this.cropOpts?.maxWidth, this.cropOpts?.maxHeight);
-    
+    const resized = resizeCanvas(
+      canvas,
+      this.cropOpts?.maxWidth ?? 0,
+      this.cropOpts?.maxHeight ?? 0
+    )
+    if (!resized) return
+    canvas = resized
+
     const quality = this.cropOpts?.quality || 1;
     canvas.toBlob(
       (blob) => {
         if (!blob) return
-        const file = new File([blob], this.file!.name, { type: this.file.type })
+        const file = new File([blob], sourceFile.name, { type: sourceFile.type })
         this._emitEvt('image-cropped', { blob, file })
         this.close()
       },
-      this.file!.type,
+      sourceFile.type,
       quality
     )
   }
