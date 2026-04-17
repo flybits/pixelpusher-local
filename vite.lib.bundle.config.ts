@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-// Second pass after vite.lib.config.ts: same component, but Lit is bundled (not external).
+// Second pass after vite.lib.config.ts: same entry, but Lit and cropperjs are bundled (not external).
 export default defineConfig({
   publicDir: false,
   build: {

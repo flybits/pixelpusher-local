@@ -7,6 +7,7 @@ import elementStyles from './pixel-pusher.scss?inline'
 import { pickFile } from './utils/file'
 import { CropperWindow, type CroppedImageEvent } from '@/components/cropper-window/cropper-window.ts'
 
+export { CropperWindow, type CroppedImageEvent }
 export type PixelPusherFileSelectEvent = CustomEvent<File>
 
 /**

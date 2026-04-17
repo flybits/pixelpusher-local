@@ -1,7 +1,7 @@
 {
   "name": "pixelpusher",
   "version": "0.0.0",
-  "description": "Lit web component (pixel-pusher). Default build keeps lit external; optional dist/pixel-pusher.bundle.js includes lit for single-file use.",
+  "description": "Lit web component (pixel-pusher). Default build keeps lit and cropperjs external (resolved via dependencies); dist/pixel-pusher.bundle.js inlines both for single-file use.",
   "type": "module",
   "files": [
     "dist"

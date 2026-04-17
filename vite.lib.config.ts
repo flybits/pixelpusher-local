@@ -22,7 +22,12 @@ export default defineConfig({
       fileName: 'pixel-pusher',
     },
     rollupOptions: {
-      external: (id) => id === 'lit' || id.startsWith('lit/'),
+      // Lit and cropperjs stay importable from node_modules; vite.lib.bundle.config.ts inlines both.
+      external: (id) =>
+        id === 'lit' ||
+        id.startsWith('lit/') ||
+        id === 'cropperjs' ||
+        id.startsWith('cropperjs/'),
     },
   },
   resolve: {
