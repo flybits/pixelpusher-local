@@ -1,6 +1,6 @@
 # pixelpusher
 
-Web component `<pixel-pusher>`. The library build (`npm run build:lib`) publishes two ES modules under `dist/`:
+A framework-agnostic `<pixel-pusher>` web component for image file selection with optional aspect-ratio cropping and optimization.
 
 | File | Use |
 |------|-----|
@@ -150,27 +150,87 @@ Omit `aspect-ratio` or set it to `0` if you only need `file-selected` and do not
 </pixel-pusher>
 ```
 
-Listening for `image-cropped`:
+**Listening for events**
+
+**Vanilla**
 
 ```js
-document.querySelector('pixel-pusher').addEventListener('image-cropped', (e) => {
+const el = document.querySelector('pixel-pusher');
+el.addEventListener('file-selected', (e) => {
+  console.log(e.detail);
+});
+el.addEventListener('image-cropped', (e) => {
   console.log(e.detail.blob, e.detail.file);
 });
 ```
 
-## Development
+**Vue 3** (`@file-selected` / `@image-cropped` forward to native listeners on the custom element)
 
-```bash
-npm run dev
+```vue
+<script setup lang="ts">
+import 'pixelpusher';
+
+function onFileSelected(e: CustomEvent<File>) {
+  console.log(e.detail);
+}
+
+function onImageCropped(e: CustomEvent<{ blob: Blob; file: File }>) {
+  console.log(e.detail.blob, e.detail.file);
+}
+</script>
+
+<template>
+  <pixel-pusher
+    aspect-ratio="1"
+    max-width="1024"
+    max-height="1024"
+    @file-selected="onFileSelected"
+    @image-cropped="onImageCropped"
+  />
+</template>
 ```
 
-Runs the Vite demo (port **5530**).
+The package augments `HTMLElementEventMap` for these event names; you can rely on the published `.d.ts` for stricter typing if you prefer.
 
-## Build
+**React** (use `addEventListener` on a ref—React does not treat hyphenated custom events like Vue’s `@` syntax)
 
-| Command | Output |
-|---------|--------|
-| `npm run build` | Demo app → `dist-app/` |
-| `npm run build:lib` | Library → `dist/` (`pixel-pusher.js`, `pixel-pusher.bundle.js`, declarations) |
+```tsx
+import 'pixelpusher';
+import { useEffect, useRef } from 'react';
 
-`prepublishOnly` runs `build:lib`.
+export function PixelPusherField() {
+  const ref = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const onFile = (e: Event) => {
+      const ce = e as CustomEvent<File>;
+      console.log(ce.detail);
+    };
+    const onCropped = (e: Event) => {
+      const ce = e as CustomEvent<{ blob: Blob; file: File }>;
+      console.log(ce.detail.blob, ce.detail.file);
+    };
+
+    el.addEventListener('file-selected', onFile);
+    el.addEventListener('image-cropped', onCropped);
+    return () => {
+      el.removeEventListener('file-selected', onFile);
+      el.removeEventListener('image-cropped', onCropped);
+    };
+  }, []);
+
+  return (
+    <pixel-pusher
+      ref={ref}
+      aspectRatio={1}
+      maxWidth={1024}
+      maxHeight={1024}
+    />
+  );
+}
+```
+
+Set properties with the camelCase names from the [Attributes](#attributes) table (`aspectRatio`, `maxWidth`, …) so you avoid hyphenated JSX attribute issues.
