@@ -55,6 +55,11 @@ export class PixelPusher extends LitElement {
   @state()
   private croppedPreviewURL: string | null = null;
 
+  get defaultSlotContent(): HTMLElement | null {
+    const defaultSlot = this.shadowRoot?.querySelector('slot:not([name])') as HTMLSlotElement | null;
+    return defaultSlot?.assignedElements({flatten: true})[0] as HTMLElement | null;
+  }
+
   async openFilePicker() {
     try{
       const files = await pickFile({
@@ -81,6 +86,23 @@ export class PixelPusher extends LitElement {
     }
   }
 
+  private _updateChildPreviews() {
+    if(this.defaultSlotContent && this.croppedPreviewURL){
+      if(this.defaultSlotContent instanceof HTMLImageElement && this.defaultSlotContent.hasAttribute('data-pp-preview')){
+        this.defaultSlotContent.src = this.croppedPreviewURL;
+      } else if(this.defaultSlotContent instanceof HTMLElement && this.defaultSlotContent.hasAttribute('data-pp-preview')){
+        this.defaultSlotContent.style.backgroundImage = `url(${this.croppedPreviewURL})`;
+      }
+      
+      this.defaultSlotContent.querySelectorAll('img[data-pp-preview]').forEach(img => {
+        (img as HTMLImageElement).src = this.croppedPreviewURL;
+      });
+      this.defaultSlotContent.querySelectorAll('div[data-pp-preview]').forEach(div => {
+        (div as HTMLElement).style.backgroundImage = `url(${this.croppedPreviewURL})`;
+      });
+    }
+  }
+
   private _onImageCropped(event: CustomEvent<CroppedImageEvent>) {
     this._croppedFile = event.detail?.file;
     this._croppedBlob = event.detail?.blob;
@@ -89,6 +111,7 @@ export class PixelPusher extends LitElement {
     }
     if(this._croppedBlob){
       this.croppedPreviewURL = URL.createObjectURL(this._croppedBlob);
+      this._updateChildPreviews();
     }
   }
 
