@@ -29,19 +29,19 @@ export class PixelPusher extends LitElement {
   /**
    * Maximum width of the image in pixels
    */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'max-width' })
   maxWidth = 0;
 
   /**
    * Maximum height of the image in pixels
    */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'max-height' })
   maxHeight = 0;
 
   /**
    * Quality of the image in decimal format (0.0 to 1.0)
    */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'quality' })
   quality = 0.92;
 
   /**
