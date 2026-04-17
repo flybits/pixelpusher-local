@@ -47,7 +47,7 @@ export class PixelPusher extends LitElement {
   /**
    * Title of the crop modal
    */
-  @property({ type: String })
+  @property({ type: String, attribute: 'crop-modal-title' })
   cropModalTitle = 'Crop Image';
 
   private _croppedFile: File | null = null;
