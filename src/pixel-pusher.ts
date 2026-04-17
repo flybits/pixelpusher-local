@@ -11,10 +11,10 @@ export { CropperWindow, type CroppedImageEvent }
 export type PixelPusherFileSelectEvent = CustomEvent<File>
 
 /**
- * An example element.
+ * Image file picker with optional cropping. Clicking opens a file dialog; when
+ * `aspectRatio` is set, the crop modal opens before emitting the result.
  *
- * @slot - This element has a slot
- * @csspart button - The button
+ * @slot - Optional light DOM for the clickable area. Without slotted children, a default upload and preview UI is used. Mark elements with `data-pp-preview` to receive the cropped image preview.
  */
 @customElement('pixel-pusher')
 export class PixelPusher extends LitElement {
@@ -165,6 +165,7 @@ declare global {
   }
 
   interface HTMLElementEventMap {
-    'file-selected': PixelPusherFileSelectEvent,
+    'file-selected': PixelPusherFileSelectEvent
+    'image-cropped': CroppedImageEvent
   }
 }
