@@ -1,3 +1,5 @@
+@use '@/_variables' as *;
+
 @mixin clickable{
   user-select:none;
   cursor: pointer;
@@ -6,4 +8,61 @@
 @mixin movable{
   user-select:none;
   cursor: move;
+}
+
+@mixin flb-btn {
+  all: unset;
+  @include clickable;
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 24px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  font-size: 16px;
+  line-height: 1.5;
+  min-width: 64px;
+  text-align: center;
+
+  &.primary {
+    background-color: $color-action-primary;
+    color: #FFFFFF;
+    border-color: $color-action-primary;
+
+    &:hover:not(:disabled):not(.disabled) {
+      background-color: $color-action-primary-hover;
+    }
+  }
+
+  &.secondary {
+    background-color: $color-action-secondary;
+    border-color: $color-action-secondary;
+    color: $color-action-primary;
+
+    &:hover:not(:disabled):not(.disabled) {
+      background-color: $color-action-secondary-hover;
+    }
+  }
+
+  &.ghost {
+    background-color: transparent;
+    color: $color-action-primary;
+
+    &:hover:not(:disabled):not(.disabled) {
+      color: $color-action-primary-hover;
+    }
+  }
+
+  &:disabled,
+  &.disabled {
+    cursor: default;
+    opacity: 0.5;
+
+    ink-ripple {
+      display: none;
+    }
+  }
 }

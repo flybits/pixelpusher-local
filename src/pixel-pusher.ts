@@ -1,6 +1,6 @@
-import { LitElement, html, unsafeCSS } from 'lit'
+import { LitElement, html, nothing, unsafeCSS } from 'lit'
 import { createRef, ref } from 'lit/directives/ref.js'
-import { customElement, property } from 'lit/decorators.js'
+import { customElement, property, state } from 'lit/decorators.js'
 import uploadIcon from './assets/upload.svg'
 import elementStyles from './pixel-pusher.scss?inline'
 
@@ -43,38 +43,48 @@ export class PixelPusher extends LitElement {
   @property({ type: Number })
   quality = 0.92;
 
-  openFilePicker() {
-    pickFile({
-      accept: 'image/*',
-      multiple: false
-    }).then((files) => {
+  private _croppedFile: File | null = null;
+  private _croppedBlob: Blob | null = null;
+  
+  @state()
+  private croppedPreviewURL: string | null = null;
+
+  async openFilePicker() {
+    try{
+      const files = await pickFile({
+        accept: 'image/*',
+        multiple: false
+      });
+  
       const file = files?.[0];
       console.log('file', file)
       if(file){
         this._emitEvt('file-selected', file);
-
+  
         if(this.aspectRatio > 0){
           this.cropperWindowRef.value?.open(file, {
-            aspectRatio: this.aspectRatio
+            aspectRatio: this.aspectRatio,
+            maxWidth: this.maxWidth,
+            maxHeight: this.maxHeight,
+            quality: this.quality
           });
         }
-        // const tmpURL = URL.createObjectURL(file);
-        // console.log('tmpURL', tmpURL)
-        // const img = new Image();
-        // img.src = tmpURL;
-        // img.onload = () => {
-        //   console.log('img', img)
-        // }
-        // img.onerror = (error: Event) => {
-        //   console.error('error', error)
-        // }
       }
-    }).catch((error) => {
+    } catch(error){
       console.error(error)
-    })
+    }
   }
 
-  private _emitEvt<T>(name: string, detail: T) {
+  private _onImageCropped(event: CustomEvent<CroppedImageEvent>) {
+    this._croppedFile = event.detail?.file;
+    this._croppedBlob = event.detail?.blob;
+    if(this.croppedPreviewURL){
+      URL.revokeObjectURL(this.croppedPreviewURL);
+    }
+    this.croppedPreviewURL = URL.createObjectURL(this._croppedBlob);
+  }
+
+  private _emitEvt<T>(name: string, detail?: T) {
     this.dispatchEvent(new CustomEvent(name, { 
       detail,
       bubbles: true,
@@ -88,13 +98,20 @@ export class PixelPusher extends LitElement {
         <div class="trigger-area" @click=${this.openFilePicker}>
           <slot>
             <div class="upload-area">
-              <img class="upload-icon" src=${uploadIcon} alt="Pixel Pusher" />
+              ${
+                this.croppedPreviewURL 
+                  ? html`<img class="cropped-preview" src=${this.croppedPreviewURL} alt="Cropped Preview" />`
+                  : html`<div class="cropped-preview-placeholder">
+                      <img class="upload-icon" src=${uploadIcon} alt="Pixel Pusher" />
+                    </div>`
+              }
             </div>
           </slot>
         </div>
         <cropper-window 
           ${ref(this.cropperWindowRef)}
           title="Crop Image" 
+          @image-cropped=${this._onImageCropped}
         />
       </div>
     `

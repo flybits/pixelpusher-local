@@ -1,0 +1,46 @@
+@use '@/_mixins' as *;
+
+.crop-window-body{
+  width: 800px;
+  height: 600px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  .cropper-wrapper{
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+    cropper-canvas{
+      height: 100%;
+    }
+  }
+  .cropper-controls{
+    flex: 0 0 auto;
+    width: 200px;
+    height: 100%;
+    overflow: hidden;
+    .control-item{
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      label{
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+.crop-window-footer{
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  .crop-footer-btn{
+    @include flb-btn;
+    &.cancel{
+      margin-left: -24px;
+    }
+  }
+}

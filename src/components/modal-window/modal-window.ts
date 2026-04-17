@@ -6,6 +6,8 @@ import elementStyles from './modal-window.scss?inline'
 
 import closeIcon from '@/assets/close.svg'
 
+export type ModalWindowCloseEvent = CustomEvent<void>
+
 @customElement('modal-window')
 export class ModalWindow extends LitElement {
   private modalWindowRef = createRef<HTMLDialogElement>()
@@ -17,7 +19,7 @@ export class ModalWindow extends LitElement {
   title = ''
 
   @property({ type: Boolean })
-  dismissible = false
+  dismissible = true
 
   private _onDialogClose() {
     if(this.isOpen){
@@ -39,7 +41,16 @@ export class ModalWindow extends LitElement {
     this.isOpen = false
     setTimeout(() => {
       this.modalWindowRef.value?.close()
+      this._emitEvt('modal-close')
     }, 200)
+  }
+
+  private _emitEvt<T>(name: string, detail?: T) {
+    this.dispatchEvent(new CustomEvent(name, { 
+      detail,
+      bubbles: true,
+      composed: true
+    }))
   }
 
   render() {
@@ -82,5 +93,9 @@ export class ModalWindow extends LitElement {
 declare global {
   interface HTMLElementTagNameMap {
     'modal-window': ModalWindow
+  }
+
+  interface HTMLElementEventMap {
+    'modal-close': CustomEvent<void>
   }
 }
