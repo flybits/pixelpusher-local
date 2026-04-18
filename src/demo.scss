@@ -198,6 +198,13 @@ body {
   border: 1px solid var(--demo-border);
   object-fit: cover;
   background: var(--demo-code-bg);
+  cursor: pointer;
+  &:hover{
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  &:active{
+    background-color: rgba(0, 0, 0, 0.1);
+  }
 }
 
 .demo-footer {
