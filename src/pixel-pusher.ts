@@ -9,6 +9,10 @@ import elementStyles from './pixel-pusher.scss?inline'
 import { applyFileExtension, pickFile } from './utils/file'
 import { canvasFromFile, resizeCanvas } from './utils/canvas'
 import { CropperWindow } from '@/components/cropper-window/cropper-window.ts'
+import { FilterWindow } from '@/components/filter-window/filter-window.ts'
+
+export { CropperWindow } from '@/components/cropper-window/cropper-window.ts'
+export { FilterWindow } from '@/components/filter-window/filter-window.ts'
 
 export type PixelPusherFileSelectEvent = CustomEvent<File>
 export type PixelPusherImageEditedEvent = CustomEvent<{ 
