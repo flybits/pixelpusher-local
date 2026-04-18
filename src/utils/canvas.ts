@@ -40,6 +40,10 @@ export const canvasFromFile = async (file: File): Promise<HTMLCanvasElement> => 
   const img = new Image();
   img.src = URL.createObjectURL(file);
   img.onload = () => {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0);
     deferred.resolve(canvas)
   }
