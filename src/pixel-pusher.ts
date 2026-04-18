@@ -47,7 +47,7 @@ export class PixelPusher extends LitElement {
    * Quality of the image in decimal format (0.0 to 1.0)
    */
   @property({ type: Number, attribute: 'quality' })
-  quality = 0.92;
+  quality;
 
   /**
    * Title of the crop modal

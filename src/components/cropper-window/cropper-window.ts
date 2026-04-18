@@ -5,6 +5,7 @@ import Cropper from 'cropperjs'
 import { resizeCanvas } from '@/utils/canvas.ts'
 import elementStyles from './cropper-window.scss?inline'
 import { ModalWindow } from '@/components/modal-window/modal-window.ts'
+import { applyFileExtension } from '@/utils/file.ts'
 
 export type CroppedImageEvent = CustomEvent<{ blob: Blob, file: File }>
 
@@ -97,14 +98,24 @@ export class CropperWindow extends LitElement {
     canvas = resized
 
     const quality = this.cropOpts?.quality || 1;
+    let resolvedType = sourceFile.type;
+    let resolvedName = sourceFile.name;
+    if(
+      (this.cropOpts?.quality && sourceFile.type !== 'image/jpeg') ||
+      sourceFile.type === 'image/svg+xml'
+    ){
+      resolvedType = 'image/webp';
+      resolvedName = applyFileExtension(sourceFile.name, resolvedType);
+    }
+
     canvas.toBlob(
       (blob) => {
         if (!blob) return
-        const file = new File([blob], sourceFile.name, { type: sourceFile.type })
+        const file = new File([blob], resolvedName, { type: resolvedType })
         this._emitEvt('image-cropped', { blob, file })
         this.close()
       },
-      sourceFile.type,
+      resolvedType,
       quality
     )
   }

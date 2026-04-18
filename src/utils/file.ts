@@ -35,3 +35,8 @@ export const pickFile = (opts: PickFileOptions = {}): Promise<FileList | null> =
 
   return def.promise;
 }
+
+export const applyFileExtension = (filename: string, mimeType: string) => {
+  const extension = mimeType.split('/')[1];
+  return `${filename.split('.')[0]}.${extension}`;
+}
