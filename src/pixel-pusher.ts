@@ -61,10 +61,11 @@ export class PixelPusher extends LitElement {
   @state()
   private croppedPreviewURL: string | null = null;
 
-  @state()
-  private _dragOverInvalid: boolean = false;
-  @state()
-  private _dragOver: boolean = false;
+  @property({ type: Boolean, reflect: true, attribute: 'trigger-drag-over-invalid' })
+  _dragOverInvalid: boolean = false;
+  
+  @property({ type: Boolean, reflect: true, attribute: 'trigger-drag-over' })
+  _dragOver: boolean = false;
 
   get defaultSlotContent(): HTMLElement | null {
     const defaultSlot = this.shadowRoot?.querySelector('slot:not([name])') as HTMLSlotElement | null;
