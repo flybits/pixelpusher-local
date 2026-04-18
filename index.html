@@ -4,11 +4,111 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pixelpusher</title>
+    <title>pixelpusher — demo</title>
     <link rel="stylesheet" href="./src/index.scss" />
-    <script type="module" src="/src/pixel-pusher.ts"></script>
+    <script type="module" src="/src/demo.ts"></script>
   </head>
   <body>
-    <pixel-pusher aspect-ratio="1.77777"></pixel-pusher>
+    <div class="demo-page">
+      <header class="demo-header">
+        <h1>pixelpusher</h1>
+        <p class="demo-lead">
+          Framework-agnostic <code>&lt;pixel-pusher&gt;</code> web component for image
+          selection with optional aspect-ratio cropping.
+        </p>
+      </header>
+
+      <section class="demo-install" aria-labelledby="install-heading">
+        <h2 id="install-heading">Install</h2>
+        <pre class="demo-code"><code>npm install pixelpusher</code></pre>
+        <pre class="demo-code"><code>import 'pixelpusher'
+// or all-in-one:
+import 'pixelpusher/bundle'</code></pre>
+      </section>
+
+      <section class="demo-card" aria-labelledby="demo-a-heading">
+        <h2 id="demo-a-heading">Default UI + crop</h2>
+        <p class="demo-desc">
+          Built-in upload control; crop modal uses 16:9 and export caps. Events appear in the
+          panel.
+        </p>
+        <div class="demo-row">
+          <div class="demo-pusher-wrap">
+            <pixel-pusher
+              id="demo-default"
+              aspect-ratio="1.77777"
+              max-width="1920"
+              max-height="1080"
+              crop-modal-title="Crop image"
+            ></pixel-pusher>
+          </div>
+          <pre
+            id="demo-a-events"
+            class="demo-events"
+            aria-live="polite"
+            role="status"
+          ></pre>
+        </div>
+      </section>
+
+      <section class="demo-card" aria-labelledby="demo-b-heading">
+        <h2 id="demo-b-heading">Slotted preview (<code>data-pp-preview</code>)</h2>
+        <p class="demo-desc">
+          Light DOM replaces the default slot; after crop, the thumbnail updates from the
+          component.
+        </p>
+        <div class="demo-row">
+          <div class="demo-pusher-wrap">
+            <pixel-pusher
+              id="demo-slotted"
+              aspect-ratio="1"
+              max-width="1024"
+              max-height="1024"
+              crop-modal-title="Crop thumbnail"
+            >
+              <img
+                class="demo-slotted-thumb"
+                data-pp-preview
+                alt=""
+                width="140"
+                height="140"
+              />
+            </pixel-pusher>
+          </div>
+          <pre
+            id="demo-b-events"
+            class="demo-events"
+            aria-live="polite"
+            role="status"
+          ></pre>
+        </div>
+      </section>
+
+      <section class="demo-card" aria-labelledby="demo-c-heading">
+        <h2 id="demo-c-heading">No crop (pick only)</h2>
+        <p class="demo-desc">
+          <code>aspect-ratio="0"</code> skips the crop step; only <code>file-selected</code>
+          fires.
+        </p>
+        <div class="demo-row">
+          <div class="demo-pusher-wrap">
+            <pixel-pusher id="demo-no-crop" aspect-ratio="0"></pixel-pusher>
+          </div>
+          <pre
+            id="demo-c-events"
+            class="demo-events"
+            aria-live="polite"
+            role="status"
+          ></pre>
+        </div>
+      </section>
+
+      <footer class="demo-footer">
+        <p>
+          Full API, attributes, and framework examples: see the package
+          <strong>README</strong> on npm.
+        </p>
+      </footer>
+    </div>
   </body>
 </html>
