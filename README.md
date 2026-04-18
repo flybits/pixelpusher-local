@@ -55,8 +55,20 @@ Clicking `<pixel-pusher>` opens an image file picker (`accept: image/*`, single 
 | `aspect-ratio` | `aspectRatio` | Decimal width ÷ height; `> 0` enables the crop flow |
 | `max-width` | `maxWidth` | Used when exporting the cropped image (pixels) |
 | `max-height` | `maxHeight` | Used when exporting the cropped image (pixels) |
-| `quality` | `quality` | Export quality (default `0.92`) |
+| `quality` | `quality` | Optional. How heavily the cropped image is compressed (typically `0`–`1`; higher ≈ larger file, sharper). When set, a PNG or similar non-JPEG input is saved as WebP; SVG crops are always WebP. See [Quality and saved file format](#quality-and-saved-file-format). |
 | `crop-modal-title` | `cropModalTitle` | Modal title (default `Crop Image`) |
+
+### Quality and saved file format
+
+These rules apply to the cropped file from the **`image-cropped`** event (not the raw file from **`file-selected`** when you only need the picker).
+
+**What `quality` does:** It sets how strong compression is on the cropped result (roughly, higher ≈ larger file and sharper; lower ≈ smaller). It applies to JPEG and WebP outputs, including when a PNG-like file is saved as WebP because you set `quality`.
+
+**By input type:**
+
+- **JPEG** — The cropped file stays a **JPEG**. `quality` only changes compression, not the format.
+- **PNG** (and other non-JPEG bitmaps) — If you **set** `quality`, the cropped file is saved as **WebP**. If you **omit** `quality`, the cropped file stays the **same kind** as the original (e.g. PNG in → PNG out). If your backend expects PNG uploads, leave `quality` unset unless you are fine delivering WebP.
+- **SVG** — After cropping, the file is always **WebP** (the crop step produces a normal image). `quality` still affects how compressed that WebP is.
 
 For TypeScript, see the published declarations (`./dist/src/pixel-pusher.d.ts`) for exported types and symbols.
 
