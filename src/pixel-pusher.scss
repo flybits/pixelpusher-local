@@ -47,6 +47,20 @@
       border: 1px solid var(--accent-border);
     }
   }
+  .trigger-area {
+    &.drag-over {
+      .upload-area{
+        background-color: mix-darken(var(--accent-bg), 5%);
+        border: 1px solid var(--accent-border);
+      }
+    }
+    &.drag-over-invalid {
+      .upload-area{
+        background-color: rgba(255, 0, 0, 0.1);
+        border: 1px solid rgba(255, 0, 0, 0.1);
+      }
+    }
+  }
 }
 
 @media (prefers-color-scheme: dark) {

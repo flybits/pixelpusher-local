@@ -1,6 +1,7 @@
 import { LitElement, html, unsafeCSS } from 'lit'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { customElement, property, state } from 'lit/decorators.js'
+import { classMap } from 'lit/directives/class-map.js'
 import uploadIcon from './assets/upload.svg'
 import elementStyles from './pixel-pusher.scss?inline'
 
@@ -9,6 +10,10 @@ import { CropperWindow, type CroppedImageEvent } from '@/components/cropper-wind
 
 export { CropperWindow, type CroppedImageEvent }
 export type PixelPusherFileSelectEvent = CustomEvent<File>
+
+const hasInvalidFileTypes = (files: File[]) => {
+  return files.some(file => !file.type.startsWith('image/'));
+}
 
 /**
  * Image file picker with optional cropping. Clicking opens a file dialog; when
@@ -56,6 +61,11 @@ export class PixelPusher extends LitElement {
   @state()
   private croppedPreviewURL: string | null = null;
 
+  @state()
+  private _dragOverInvalid: boolean = false;
+  @state()
+  private _dragOver: boolean = false;
+
   get defaultSlotContent(): HTMLElement | null {
     const defaultSlot = this.shadowRoot?.querySelector('slot:not([name])') as HTMLSlotElement | null;
     return defaultSlot?.assignedElements({flatten: true})[0] as HTMLElement | null;
@@ -69,21 +79,59 @@ export class PixelPusher extends LitElement {
       });
   
       const file = files?.[0];
-      console.log('file', file)
-      if(file){
-        this._emitEvt('file-selected', file);
-  
-        if(this.aspectRatio > 0){
-          this.cropperWindowRef.value?.open(file, {
-            aspectRatio: this.aspectRatio,
-            maxWidth: this.maxWidth,
-            maxHeight: this.maxHeight,
-            quality: this.quality
-          });
-        }
+      if (file) {
+        this._selectFile(file);
       }
     } catch(error){
       console.error(error)
+    }
+  }
+
+  private _selectFile(file: File) {
+    console.log('file', file)
+    if(file){
+      this._emitEvt('file-selected', file);
+
+      if(this.aspectRatio > 0){
+        this.cropperWindowRef.value?.open(file, {
+          aspectRatio: this.aspectRatio,
+          maxWidth: this.maxWidth,
+          maxHeight: this.maxHeight,
+          quality: this.quality
+        });
+      }
+    }
+  }
+  
+  private _handleDragEvt(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    if(event.type === 'dragenter' || event.type === 'dragover'){
+      this._dragOver = true;
+      let selectedFiles: File[] = [];
+      if((event as DragEvent)?.dataTransfer?.files?.length) {
+        selectedFiles = Array.from((event as DragEvent)?.dataTransfer?.files || []) as File[];
+      } else if((event as DragEvent)?.dataTransfer?.items?.length) {
+        selectedFiles = Array.from((event as DragEvent)?.dataTransfer?.items || []).map(item => {
+          return new File([],'', { type: item.type });
+        });
+      }
+      if(selectedFiles.length <= 0 || hasInvalidFileTypes(selectedFiles)){
+        this._dragOverInvalid = true;
+      }
+    } else if(event.type === 'dragleave'){
+      this._dragOver = false;
+      this._dragOverInvalid = false;
+    } else if(event.type === 'drop'){
+      let selectedFiles: File[] = [];
+      if((event as DragEvent)?.dataTransfer?.files?.length) {
+        selectedFiles = Array.from((event as DragEvent)?.dataTransfer?.files || []) as File[];
+      }
+      this._dragOver = false;
+      this._dragOverInvalid = false;
+      if(selectedFiles?.length > 0 && !hasInvalidFileTypes(selectedFiles)){
+        this._selectFile(selectedFiles[0]);
+      }
     }
   }
 
@@ -134,7 +182,18 @@ export class PixelPusher extends LitElement {
   render() {
     return html`
       <div class="pixel-pusher">
-        <div class="trigger-area" @click=${this.openFilePicker}>
+        <div 
+          class=${classMap({
+            'trigger-area': true,
+            'drag-over': this._dragOver,
+            'drag-over-invalid': this._dragOverInvalid
+          })}
+          @click=${this.openFilePicker}
+          @dragenter=${this._handleDragEvt}
+          @dragover=${this._handleDragEvt}
+          @dragleave=${this._handleDragEvt}
+          @drop=${this._handleDragEvt}
+        >
           <slot>
             <div class="upload-area">
               ${
