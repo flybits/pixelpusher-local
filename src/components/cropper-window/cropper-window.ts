@@ -1,5 +1,5 @@
 import { LitElement, html, unsafeCSS } from 'lit'
-import { customElement } from 'lit/decorators.js'
+import { customElement, property } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
 import Cropper from 'cropperjs'
 import { resizeCanvas } from '@/utils/canvas.ts'
@@ -24,6 +24,9 @@ export class CropperWindow extends LitElement {
   private cropOpts: CropOptions | null = null;
   private file: File | null = null;
   private img: HTMLImageElement | null = null;
+
+  @property({ type: String, reflect: true, attribute: 'title' })
+  title: string = 'Crop Image';
 
   open(file: File, cropOptions: CropOptions) {
     this.file = file;
@@ -118,7 +121,7 @@ export class CropperWindow extends LitElement {
     return html`
       <modal-window 
         ${ref(this.modalWindowRef)}
-        title="Crop Image"
+        title=${this.title}
         @modal-close=${this._onModalClose}
       >
         <div class="crop-window-body">
