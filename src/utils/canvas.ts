@@ -1,3 +1,5 @@
+import Deferred from "@/models/deferred.ts";
+
 export const downScaleDimensions = (
   inputWidth: number, 
   inputHeight: number, 
@@ -27,4 +29,23 @@ export const resizeCanvas = (canvas: HTMLCanvasElement, maxWidth: number, maxHei
   ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, width, height);
   
   return outputCanvas;
+}
+
+export const canvasFromFile = async (file: File): Promise<HTMLCanvasElement> => {
+  const deferred = new Deferred<HTMLCanvasElement>();
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  
+  const img = new Image();
+  img.src = URL.createObjectURL(file);
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0);
+    deferred.resolve(canvas)
+  }
+  img.onerror = () => {
+    deferred.reject(new Error('Failed to load image'))
+  }
+
+  return deferred.promise;
 }

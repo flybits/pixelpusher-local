@@ -2,18 +2,15 @@ import { LitElement, html, unsafeCSS } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
 import Cropper from 'cropperjs'
-import { resizeCanvas } from '@/utils/canvas.ts'
+
+import Deferred from '@/models/deferred.ts';
 import elementStyles from './cropper-window.scss?inline'
 import { ModalWindow } from '@/components/modal-window/modal-window.ts'
-import { applyFileExtension } from '@/utils/file.ts'
 
-export type CroppedImageEvent = CustomEvent<{ blob: Blob, file: File }>
+export type CroppedImageEvent = CustomEvent<{ canvas: HTMLCanvasElement }>
 
 export type CropOptions = {
   aspectRatio: number
-  maxWidth: number
-  maxHeight: number
-  quality: number
 }
 
 @customElement('cropper-window')
@@ -25,11 +22,17 @@ export class CropperWindow extends LitElement {
   private cropOpts: CropOptions | null = null;
   private file: File | null = null;
   private img: HTMLImageElement | null = null;
+  private _deferredReq: Deferred<HTMLCanvasElement> | null = null;
 
   @property({ type: String, reflect: true, attribute: 'title' })
   title: string = 'Crop Image';
 
-  open(file: File, cropOptions: CropOptions) {
+  open(
+    file: File, 
+    cropOptions: CropOptions, 
+    deferredRequest: Deferred<HTMLCanvasElement>
+  ) {
+    this._deferredReq = deferredRequest;
     this.file = file;
     this.cropOpts = cropOptions;
     this.modalWindowRef.value?.open();
@@ -43,9 +46,15 @@ export class CropperWindow extends LitElement {
       }
       this.img.onerror = () => {
         console.error('image load error')
+        if(this._deferredReq){
+          this._deferredReq.reject(new Error('Failed to load image'));
+        }
       }
     } else{
       console.error('no file provided');
+      if(this._deferredReq){
+        this._deferredReq.reject(new Error('No file provided'));
+      }
     }
   }
 
@@ -88,43 +97,26 @@ export class CropperWindow extends LitElement {
     const sourceFile = this.file
     if (!sourceFile) return
 
-    let canvas = await selection.$toCanvas()
-    const resized = resizeCanvas(
-      canvas,
-      this.cropOpts?.maxWidth ?? 0,
-      this.cropOpts?.maxHeight ?? 0
-    )
-    if (!resized) return
-    canvas = resized
-
-    const quality = this.cropOpts?.quality || 1;
-    let resolvedType = sourceFile.type;
-    let resolvedName = sourceFile.name;
-    if(
-      (this.cropOpts?.quality && sourceFile.type !== 'image/jpeg') ||
-      sourceFile.type === 'image/svg+xml'
-    ){
-      resolvedType = 'image/webp';
-      resolvedName = applyFileExtension(sourceFile.name, resolvedType);
+    try{
+      let canvas = await selection.$toCanvas()
+      if(this._deferredReq){
+        this._deferredReq.resolve(canvas);
+      }
+      this._emitEvt('image-cropped', { canvas })
+      this.close();
+    } catch(error){
+      console.error(error)
+      if(this._deferredReq){
+        this._deferredReq.reject(error);
+      }
     }
-
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) return
-        const file = new File([blob], resolvedName, { type: resolvedType })
-        this._emitEvt('image-cropped', { blob, file })
-        this.close()
-      },
-      resolvedType,
-      quality
-    )
   }
 
   private _emitEvt<T>(name: string, detail?: T) {
     this.dispatchEvent(new CustomEvent(name, { 
       detail,
-      bubbles: true,
-      composed: true
+      bubbles: false,
+      composed: false
     }))
   }
 
