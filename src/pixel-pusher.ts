@@ -61,6 +61,18 @@ export class PixelPusher extends LitElement {
   grayscale = false;
 
   /**
+   * Brightness amount in percentage
+   */
+  @property({ type: Number, attribute: 'brightness' })
+  brightness = 50;
+
+  /**
+   * Contrast amount in percentage
+   */
+  @property({ type: Number, attribute: 'contrast' })
+  contrast = 50;
+
+  /**
    * Maximum width of the image in pixels
    */
   @property({ type: Number, attribute: 'max-width' })
@@ -88,7 +100,13 @@ export class PixelPusher extends LitElement {
    * Title of the crop modal
    */
   @property({ type: String, attribute: 'crop-modal-title' })
-  cropModalTitle = 'Crop Image';
+  cropModalTitle = 'Crop image';
+  
+  /**
+   * Title of the filter modal
+   */
+  @property({ type: String, attribute: 'filter-modal-title' })
+  filterModalTitle = 'Edit image';
 
   private _editCanvas: HTMLCanvasElement | null = null;
   private _sourceFile: File | null = null;
@@ -101,6 +119,7 @@ export class PixelPusher extends LitElement {
   
   @property({ type: Boolean, reflect: true, attribute: 'trigger-drag-over' })
   _dragOver: boolean = false;
+  
 
   get defaultSlotContent(): HTMLElement | null {
     const defaultSlot = this.shadowRoot?.querySelector('slot:not([name])') as HTMLSlotElement | null;
@@ -158,6 +177,31 @@ export class PixelPusher extends LitElement {
       }
 
       // apply filters
+      if(this.hasFilterConfigs || this.interactiveFilters){
+        const deferredFilter = new Deferred<HTMLCanvasElement>();
+        const filterFn = this.interactiveFilters 
+          ? this.filterWindowRef.value?.open 
+          : this.filterWindowRef.value?.applyFilters;
+        filterFn.call(
+          this.filterWindowRef.value, 
+          this._editCanvas, 
+          {
+            blur: this.blurPx,
+            grayscale: this.grayscale,
+            rotate: this.rotateDeg,
+            brightness: this.brightness,
+            contrast: this.contrast,
+          },
+          deferredFilter
+        );
+
+        try{
+          this._editCanvas = await deferredFilter.promise;
+        } catch(error){
+          console.error(error)
+          return;
+        }
+      }
 
       this._commitEditCanvas();
     }
@@ -253,29 +297,6 @@ export class PixelPusher extends LitElement {
     }
   }
 
-  // private _onImageCropped(event: CroppedImageEvent) {
-  //   event.stopPropagation();
-    // this._editCanvas = event.detail?.canvas ?? null;
-
-
-
-    // this._croppedFile = event.detail?.file ?? null;
-    // this._croppedBlob = event.detail?.blob ?? null;
-    // if(this.croppedPreviewURL){
-    //   URL.revokeObjectURL(this.croppedPreviewURL);
-    // }
-    // if(this._croppedBlob){
-    //   this.croppedPreviewURL = URL.createObjectURL(this._croppedBlob);
-    //   this._updateChildPreviews();
-
-    //   event.stopPropagation();
-    //   this._emitEvt('image-cropped', { 
-    //     blob: this._croppedBlob, 
-    //     file: this._croppedFile 
-    //   });
-    // }
-  // }
-
   private _emitEvt<T>(name: string, detail?: T) {
     this.dispatchEvent(new CustomEvent(name, { 
       detail,
@@ -314,7 +335,11 @@ export class PixelPusher extends LitElement {
         <cropper-window 
           ${ref(this.cropperWindowRef)}
           title=${this.cropModalTitle} 
-        />
+        ></cropper-window>
+        <filter-window
+          ${ref(this.filterWindowRef)}
+          title=${this.filterModalTitle}
+        ></filter-window>
       </div>
     `
   }

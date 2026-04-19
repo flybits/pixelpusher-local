@@ -15,7 +15,21 @@ export const downScaleDimensions = (
   return { width: outputWidth, height: outputHeight };
 }
 
-export const resizeCanvas = (canvas: HTMLCanvasElement, maxWidth: number, maxHeight: number): HTMLCanvasElement | undefined => {
+export const cloneCanvas = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
+  const outputCanvas = document.createElement('canvas');
+  outputCanvas.width = canvas.width;
+  outputCanvas.height = canvas.height;
+  const ctx = outputCanvas.getContext('2d');
+  if (!ctx) return;
+  ctx.drawImage(canvas, 0, 0);
+  return outputCanvas;
+}
+
+export const resizeCanvas = (
+  canvas: HTMLCanvasElement, 
+  maxWidth: number, 
+  maxHeight: number
+): HTMLCanvasElement | undefined => {
   const outputCanvas = document.createElement('canvas');
   const ctx = outputCanvas.getContext('2d');
   if (!ctx) return;
