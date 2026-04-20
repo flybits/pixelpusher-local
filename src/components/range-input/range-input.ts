@@ -47,9 +47,6 @@ export class RangeInput extends LitElement {
 
   private _onInput() {
     this._displayValue = this.curValue;
-    if(!this._prevValue) {
-      this._prevValue = this.curValue;
-    }
     this._emitEvt('range-value-update', { value: this.curValue });
   }
 
@@ -62,10 +59,17 @@ export class RangeInput extends LitElement {
   }
 
   private _onReset() {
+    this._emitEvt('range-value-update', { value: this._prevValue });
+    this.value = this._prevValue;
+    this._prevValue = 0;
     this._setInitialPos();
   }
 
   private _setInitialPos() {
+    if(!this._prevValue) {
+      this._prevValue = this.value;
+    }
+    
     const track = this.rangeSliderTrackRef.value;
     if (!track) return;
     const range = this.max - this.min;
