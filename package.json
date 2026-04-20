@@ -30,7 +30,10 @@
     "build": "tsc && vite build",
     "build:lib": "vite build --config vite.lib.config.ts && vite build --config vite.lib.bundle.config.ts",
     "preview": "vite preview --outDir dist-app",
-    "prepublishOnly": "npm run build:lib"
+    "prepublishOnly": "npm run build:lib",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "cropperjs": "^2.1.1",
@@ -38,9 +41,13 @@
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "^4.1.4",
+    "canvas": "^3.2.3",
+    "happy-dom": "^20.9.0",
     "sass": "^1.99.0",
     "typescript": "~6.0.2",
     "vite": "^8.0.4",
-    "vite-plugin-dts": "^4.5.4"
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.1.4"
   }
 }
