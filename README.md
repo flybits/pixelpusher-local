@@ -1,6 +1,6 @@
 # pixelpusher
 
-A framework-agnostic `<pixel-pusher>` web component for image file selection with optional aspect-ratio cropping and optimization.
+A framework-agnostic `<pixel-pusher>` web component for image file selection with optional aspect-ratio cropping, optional image filters (rotation, brightness, contrast, grayscale, blur), and optimization.
 
 | File | Use |
 |------|-----|
@@ -46,29 +46,63 @@ Do **not** load both the default and the bundled script on the same page; the cu
 
 ## API
 
-Clicking `<pixel-pusher>` opens an image file picker (`accept: image/*`, single file). If **`aspect-ratio` is greater than zero**, after a file is chosen the crop modal opens using `max-width`, `max-height`, `quality`, and `crop-modal-title`. If **`aspect-ratio` is zero or unset**, `file-selected` still fires when a file is picked, but the crop modal does not open, so **`image-cropped` does not fire** from that flow.
+Clicking `<pixel-pusher>` opens an image file picker (`accept: image/*`, single file). After a file is chosen, the pipeline runs: optional **crop** (when **`aspect-ratio` is greater than zero**), optional **filters** (see [Filters](#filters)), then export (resize per `max-width` / `max-height`, encode per `quality`). If **`aspect-ratio` is zero or unset**, the crop modal does not open, but **`file-selected`** still fires and, when processing completes successfully, **`image-edited`** still fires with the loaded image (plus any filters), subject to `max-width` / `max-height` / `quality`.
+
+### Filters
+
+The filter step runs **after** the image is loaded and **after** cropping, if cropping is enabled.
+
+**Declarative attributes** set rotation, blur, grayscale, brightness, and contrast on the `<pixel-pusher>` element. The component applies those values when the filter pipeline runs.
+
+#### `interactive-filters`
+
+This flag controls whether the user sees the **Edit image** modal and whether the filter pipeline runs when all filter attributes are at their defaults.
+
+1. **Pipeline gating** — The filter step runs when **either** any filter attribute requests a non-default effect (`hasFilterConfigs`) **or** `interactive-filters` is set. If blur and rotation are zero, grayscale is off, and brightness and contrast are both `50`, then **`hasFilterConfigs` is false**. In that case, setting **`interactive-filters` alone** still enters the filter flow so the user can open the editor starting from neutral settings. Without `interactive-filters`, that pick **skips** filters entirely.
+
+2. **Headless (non-interactive) apply** — When `interactive-filters` is **false** (default) and `hasFilterConfigs` is **true**, filters are applied **immediately** from the attribute values. No modal is shown; the pipeline continues to export.
+
+3. **Interactive mode** — When `interactive-filters` is **true**, the **Edit image** modal opens. The UI is seeded from the current attribute values. The user can adjust rotation (90° steps, 0–360°), brightness, contrast, blur (sliders 0–100), and grayscale before confirming. **Apply** commits the preview and continues the pipeline. **Cancel** aborts the filter step (no `image-edited` from a successful completion of that run). **Skip effects** exports the image **without** the filter effects (the canvas as it was before this filter step).
+
+4. **When to use which** — Use **`interactive-filters`** for flows where the user should tune the image (avatars, CMS assets, creative tools). Use **declarative attributes only** for fixed recipes (for example, always rotate 90° or always grayscale) where you do not want extra UI.
+
+**Per-control semantics**
+
+- **`rotate`** (`rotateDeg`) — Rotation in degrees; normalized modulo 360. Cardinal angles (90° / 180° / 270°) use a dedicated pixel path; other angles use canvas rotation and filtering.
+- **`brightness`** / **`contrast`** — `0`–`100`; **`50` means no change** (neutral). Values away from `50` increase or decrease brightness or contrast.
+- **`blur`** (`blurPx`) — Non-negative blur radius in **CSS pixels** (same numeric range as the interactive slider, `0`–`100`).
+- **`grayscale`** — Boolean; when true, a full grayscale filter is applied.
+
+**`filter-modal-title`** — Title for the Edit image modal (default `Edit image`), analogous to `crop-modal-title` for the crop modal.
 
 ### Attributes
 
 | HTML attribute | Property (TS/JS) | Notes |
 |----------------|------------------|--------|
 | `aspect-ratio` | `aspectRatio` | Decimal width ÷ height; `> 0` enables the crop flow |
-| `max-width` | `maxWidth` | Used when exporting the cropped image (pixels) |
-| `max-height` | `maxHeight` | Used when exporting the cropped image (pixels) |
-| `quality` | `quality` | Optional. How heavily the cropped image is compressed (typically `0`–`1`; higher ≈ larger file, sharper). When set, a PNG or similar non-JPEG input is saved as WebP; SVG crops are always WebP. See [Quality and saved file format](#quality-and-saved-file-format). |
-| `crop-modal-title` | `cropModalTitle` | Modal title (default `Crop Image`) |
+| `max-width` | `maxWidth` | Used when exporting the edited image (pixels); downscales only |
+| `max-height` | `maxHeight` | Used when exporting the edited image (pixels); downscales only |
+| `quality` | `quality` | Optional. How heavily the exported image is compressed (typically `0`–`1`; higher ≈ larger file, sharper). When set, a PNG or similar non-JPEG input is saved as WebP; SVG inputs are always WebP after rasterization. See [Quality and saved file format](#quality-and-saved-file-format). |
+| `crop-modal-title` | `cropModalTitle` | Crop modal title (default `Crop image`) |
+| `blur` | `blurPx` | Blur radius in px (`0` = none) |
+| `rotate` | `rotateDeg` | Rotation in degrees (`0` = none) |
+| `grayscale` | `grayscale` | When present / true, apply grayscale |
+| `brightness` | `brightness` | `0`–`100`; `50` = neutral |
+| `contrast` | `contrast` | `0`–`100`; `50` = neutral |
+| `interactive-filters` | `interactiveFilters` | When true, opens the Edit image modal; also forces the filter pipeline to run even when all other filter attributes are at defaults. See [Filters](#filters). |
+| `filter-modal-title` | `filterModalTitle` | Edit image modal title (default `Edit image`) |
 
 ### Quality and saved file format
 
-These rules apply to the cropped file from the **`image-cropped`** event (not the raw file from **`file-selected`** when you only need the picker).
+These rules apply to the file delivered with the **`image-edited`** event (not the raw file from **`file-selected`** when you only need the picker).
 
-**What `quality` does:** It sets how strong compression is on the cropped result (roughly, higher ≈ larger file and sharper; lower ≈ smaller). It applies to JPEG and WebP outputs, including when a PNG-like file is saved as WebP because you set `quality`.
+**What `quality` does:** It sets how strong compression is on the exported result (roughly, higher ≈ larger file and sharper; lower ≈ smaller). It applies to JPEG and WebP outputs, including when a PNG-like file is saved as WebP because you set `quality`.
 
 **By input type:**
 
-- **JPEG** — The cropped file stays a **JPEG**. `quality` only changes compression, not the format.
-- **PNG** (and other non-JPEG bitmaps) — If you **set** `quality`, the cropped file is saved as **WebP**. If you **omit** `quality`, the cropped file stays the **same kind** as the original (e.g. PNG in → PNG out). If your backend expects PNG uploads, leave `quality` unset unless you are fine delivering WebP.
-- **SVG** — After cropping, the file is always **WebP** (the crop step produces a normal image). `quality` still affects how compressed that WebP is.
+- **JPEG** — The exported file stays a **JPEG**. `quality` only changes compression, not the format.
+- **PNG** (and other non-JPEG bitmaps) — If you **set** `quality`, the exported file is saved as **WebP**. If you **omit** `quality`, the exported file stays the **same kind** as the original (e.g. PNG in → PNG out). If your backend expects PNG uploads, leave `quality` unset unless you are fine delivering WebP.
+- **SVG** — After rasterization (crop and/or filters), the file is always **WebP**. `quality` still affects how compressed that WebP is.
 
 For TypeScript, see the published declarations (`./dist/src/pixel-pusher.d.ts`) for exported types and symbols.
 
@@ -79,17 +113,17 @@ Both events use `bubbles: true` and `composed: true` so they cross shadow DOM bo
 | Event | `event.detail` | When |
 |--------|----------------|------|
 | `file-selected` | `File` | After the user picks a file (when a file exists) |
-| `image-cropped` | `{ blob: Blob, file: File }` | After a successful crop; emitted on `<pixel-pusher>` |
+| `image-edited` | `{ canvas: HTMLCanvasElement, blob: Blob, file: File }` | After processing finishes successfully: optional crop, optional filters, then resize/encode. Not emitted if the user cancels crop or filters when those steps are shown. |
 
-The package augments `HTMLElementEventMap` for `file-selected` and `image-cropped` in TypeScript.
+The package augments `HTMLElementEventMap` for `file-selected` and `image-edited` in TypeScript.
 
 ### Default slot
 
-The clickable trigger wraps the **default** slot. **Without** slotted light DOM, the fallback UI shows the built-in upload placeholder and, after a successful crop, an internal preview image. **With** slotted content, that markup is the trigger; wiring your own preview targets uses `data-pp-preview` (below).
+The clickable trigger wraps the **default** slot. **Without** slotted light DOM, the fallback UI shows the built-in upload placeholder and, after a successful edit, an internal preview image. **With** slotted content, that markup is the trigger; wiring your own preview targets uses `data-pp-preview` (below).
 
 ### `data-pp-preview`
 
-After a successful crop (when a cropped blob exists), the component sets preview URLs on slotted content as follows:
+After a successful edit (when an exported blob exists), the component sets preview URLs on slotted content as follows:
 
 1. **First assigned element** of the default slot (flattened): if it is an **`img` with `data-pp-preview`**, its `src` is set to an object URL; otherwise, if it is any **`HTMLElement` with `data-pp-preview`** (and not handled as `img`), `style.backgroundImage` is set to `url(<object-url>)`.
 2. **Descendants** of that first element: every **`img[data-pp-preview]`** gets `src` updated; every **`div[data-pp-preview]`** gets `backgroundImage` updated. Other element types are not matched by the descendant selectors (only the root node handles arbitrary non-`img` elements with the attribute).
@@ -109,7 +143,37 @@ Only the **first** flattened assigned element is used as the root for `querySele
 ></pixel-pusher>
 ```
 
-Omit `aspect-ratio` or set it to `0` if you only need `file-selected` and do not want the crop modal (`image-cropped` will not fire from cropping because cropping is skipped).
+Omit `aspect-ratio` or set it to `0` if you only need `file-selected` and do not want the crop modal. Processing can still complete and emit **`image-edited`** (with resize/quality applied when configured).
+
+**Declarative filters (no modal)**
+
+Fixed recipe: rotate 90°, grayscale, neutral brightness/contrast.
+
+```html
+<pixel-pusher
+  aspect-ratio="1"
+  rotate="90"
+  grayscale
+  brightness="50"
+  contrast="50"
+  max-width="1024"
+  max-height="1024"
+></pixel-pusher>
+```
+
+**Interactive filters (Edit image modal)**
+
+User can tune effects before export; filter pipeline runs even when other filter attributes are left at defaults.
+
+```html
+<pixel-pusher
+  aspect-ratio="1"
+  interactive-filters
+  filter-modal-title="Edit image"
+  max-width="1024"
+  max-height="1024"
+></pixel-pusher>
+```
 
 **Slotted root `<img>`**
 
@@ -171,12 +235,12 @@ const el = document.querySelector('pixel-pusher');
 el.addEventListener('file-selected', (e) => {
   console.log(e.detail);
 });
-el.addEventListener('image-cropped', (e) => {
-  console.log(e.detail.blob, e.detail.file);
+el.addEventListener('image-edited', (e) => {
+  console.log(e.detail.canvas, e.detail.blob, e.detail.file);
 });
 ```
 
-**Vue 3** (`@file-selected` / `@image-cropped` forward to native listeners on the custom element)
+**Vue 3** (`@file-selected` / `@image-edited` forward to native listeners on the custom element)
 
 ```vue
 <script setup lang="ts">
@@ -186,8 +250,10 @@ function onFileSelected(e: CustomEvent<File>) {
   console.log(e.detail);
 }
 
-function onImageCropped(e: CustomEvent<{ blob: Blob; file: File }>) {
-  console.log(e.detail.blob, e.detail.file);
+function onImageEdited(
+  e: CustomEvent<{ canvas: HTMLCanvasElement; blob: Blob; file: File }>
+) {
+  console.log(e.detail.canvas, e.detail.blob, e.detail.file);
 }
 </script>
 
@@ -197,7 +263,7 @@ function onImageCropped(e: CustomEvent<{ blob: Blob; file: File }>) {
     max-width="1024"
     max-height="1024"
     @file-selected="onFileSelected"
-    @image-cropped="onImageCropped"
+    @image-edited="onImageEdited"
   />
 </template>
 ```
@@ -221,16 +287,20 @@ export function PixelPusherField() {
       const ce = e as CustomEvent<File>;
       console.log(ce.detail);
     };
-    const onCropped = (e: Event) => {
-      const ce = e as CustomEvent<{ blob: Blob; file: File }>;
-      console.log(ce.detail.blob, ce.detail.file);
+    const onEdited = (e: Event) => {
+      const ce = e as CustomEvent<{
+        canvas: HTMLCanvasElement;
+        blob: Blob;
+        file: File;
+      }>;
+      console.log(ce.detail.canvas, ce.detail.blob, ce.detail.file);
     };
 
     el.addEventListener('file-selected', onFile);
-    el.addEventListener('image-cropped', onCropped);
+    el.addEventListener('image-edited', onEdited);
     return () => {
       el.removeEventListener('file-selected', onFile);
-      el.removeEventListener('image-cropped', onCropped);
+      el.removeEventListener('image-edited', onEdited);
     };
   }, []);
 

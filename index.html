@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pixelpusher — demo</title>
+    <title>pixelpusher — demo (crop, filters, export)</title>
     <link rel="stylesheet" href="./src/demo.scss" />
     <script type="module" src="/src/demo.ts"></script>
   </head>
@@ -13,8 +13,10 @@
       <header class="demo-header">
         <h1>pixelpusher</h1>
         <p class="demo-lead">
-          Framework-agnostic <code>&lt;pixel-pusher&gt;</code> web component for image
-          selection with optional aspect-ratio cropping.
+          Framework-agnostic <code>&lt;pixel-pusher&gt;</code> web component for image selection,
+          optional aspect-ratio cropping, optional filters (interactive or declarative), and export
+          with resize and <code>quality</code>. You can pick a file by click or drag-and-drop onto
+          the trigger.
         </p>
       </header>
 
@@ -29,8 +31,8 @@ import 'pixelpusher/bundle'</code></pre>
       <section class="demo-card" aria-labelledby="demo-a-heading">
         <h2 id="demo-a-heading">Default UI + crop</h2>
         <p class="demo-desc">
-          Built-in upload control; crop modal uses 16:9 and export caps. Events appear in the
-          panel.
+          Built-in upload control; crop modal uses 16:9 and export caps. Drag an image onto the
+          drop zone or click to pick. Events appear in the panel.
         </p>
         <div class="demo-row">
           <div class="demo-pusher-wrap">
@@ -55,7 +57,9 @@ import 'pixelpusher/bundle'</code></pre>
         <h2 id="demo-b-heading">Slotted preview (<code>data-pp-preview</code>)</h2>
         <p class="demo-desc">
           Light DOM replaces the default slot; after crop, the thumbnail updates from the
-          component.
+          component. While dragging files over the trigger, the element exposes
+          <code>trigger-drag-over</code> (valid image) or <code>trigger-drag-over-invalid</code>
+          (non-image or empty)—this demo tints the preview green or red via those attributes.
         </p>
         <div class="demo-row">
           <div class="demo-pusher-wrap pp">
@@ -84,11 +88,97 @@ import 'pixelpusher/bundle'</code></pre>
         </div>
       </section>
 
+      <section class="demo-card" aria-labelledby="demo-d-heading">
+        <h2 id="demo-d-heading">Interactive filters</h2>
+        <p class="demo-desc">
+          With <code>interactive-filters</code>, after crop the <strong>Edit image</strong> modal
+          opens so the user can tune blur, rotation, brightness, contrast, and grayscale before
+          export. <code>filter-modal-title</code> sets the modal title.
+        </p>
+        <div class="demo-row">
+          <div class="demo-pusher-wrap demo-pusher-wrap--filters">
+            <pixel-pusher
+              id="demo-interactive-filters"
+              aspect-ratio="1"
+              interactive-filters
+              filter-modal-title="Tune your image"
+              max-width="1024"
+              max-height="1024"
+              crop-modal-title="Crop image"
+            ></pixel-pusher>
+          </div>
+          <pre
+            id="demo-d-events"
+            class="demo-events"
+            aria-live="polite"
+            role="status"
+          ></pre>
+        </div>
+      </section>
+
+      <section class="demo-card" aria-labelledby="demo-e-heading">
+        <h2 id="demo-e-heading">Declarative filters (no modal)</h2>
+        <p class="demo-desc">
+          Set filter attributes on the element for a fixed recipe—effects apply automatically after
+          crop with no Edit image UI. This example rotates 90°, applies grayscale, and uses neutral
+          brightness and contrast.
+        </p>
+        <div class="demo-row">
+          <div class="demo-pusher-wrap">
+            <pixel-pusher
+              id="demo-declarative-filters"
+              aspect-ratio="1"
+              rotate="90"
+              grayscale
+              brightness="50"
+              contrast="50"
+              max-width="1024"
+              max-height="1024"
+              crop-modal-title="Crop image"
+            ></pixel-pusher>
+          </div>
+          <pre
+            id="demo-e-events"
+            class="demo-events"
+            aria-live="polite"
+            role="status"
+          ></pre>
+        </div>
+      </section>
+
+      <section class="demo-card" aria-labelledby="demo-f-heading">
+        <h2 id="demo-f-heading">Export quality (WebP when set)</h2>
+        <p class="demo-desc">
+          <code>quality</code> controls compression on export. For non-JPEG inputs, setting
+          <code>quality</code> typically saves the result as WebP; JPEG inputs stay JPEG. This
+          instance uses <code>quality="0.85"</code> after crop.
+        </p>
+        <div class="demo-row">
+          <div class="demo-pusher-wrap">
+            <pixel-pusher
+              id="demo-quality"
+              aspect-ratio="1"
+              max-width="1024"
+              max-height="1024"
+              quality="0.85"
+              crop-modal-title="Crop image"
+            ></pixel-pusher>
+          </div>
+          <pre
+            id="demo-f-events"
+            class="demo-events"
+            aria-live="polite"
+            role="status"
+          ></pre>
+        </div>
+      </section>
+
       <section class="demo-card" aria-labelledby="demo-c-heading">
         <h2 id="demo-c-heading">No crop (pick only)</h2>
         <p class="demo-desc">
-          <code>aspect-ratio="0"</code> skips the crop step; only <code>file-selected</code>
-          fires.
+          <code>aspect-ratio="0"</code> skips the crop step. <code>file-selected</code> still
+          fires; when processing completes, <code>image-edited</code> fires with the loaded image
+          (resize/quality apply when set).
         </p>
         <div class="demo-row">
           <div class="demo-pusher-wrap">
