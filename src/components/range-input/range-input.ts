@@ -33,6 +33,8 @@ export class RangeInput extends LitElement {
   private _dragStartX = 0;
   @state()
   private _displayValue = 0;
+  @state()
+  private _prevValue = 0;
 
   @state()
   get curValue() {
@@ -45,6 +47,9 @@ export class RangeInput extends LitElement {
 
   private _onInput() {
     this._displayValue = this.curValue;
+    if(!this._prevValue) {
+      this._prevValue = this.curValue;
+    }
     this._emitEvt('range-value-update', { value: this.curValue });
   }
 
@@ -106,14 +111,14 @@ export class RangeInput extends LitElement {
     const inRangeIdx = Math.ceil(tickIdx/40 * (this.max - this.min) + this.min);
     return (
       (
-        this.curValue < this.value && 
+        this.curValue < this._prevValue && 
         inRangeIdx >= this.curValue &&
-        inRangeIdx <= this.value
+        inRangeIdx <= this._prevValue
       ) ||
       (
-        this.curValue > this.value && 
+        this.curValue > this._prevValue && 
         inRangeIdx < this.curValue &&
-        inRangeIdx >= this.value
+        inRangeIdx >= this._prevValue
       )
     )
   }
