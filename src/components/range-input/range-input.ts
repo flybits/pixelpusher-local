@@ -1,4 +1,5 @@
-import { LitElement, html, nothing, unsafeCSS } from 'lit'
+import { LitElement, html, unsafeCSS } from 'lit'
+import type { PropertyValues } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { classMap } from 'lit/directives/class-map.js'
@@ -30,11 +31,21 @@ export class RangeInput extends LitElement {
   @state()
   private _isDragging = false;
   private _dragStartX = 0;
+  @state()
+  private _displayValue = 0;
 
-  private _onInput(event: Event) {
-    event.stopPropagation();
-    
-    this._emitEvt('range-value-update', { value: this.value });
+  @state()
+  get curValue() {
+    const el = this.rangeSliderTrackRef.value;
+    if (!el) return 0;
+    const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+    const range = this.max - this.min;
+    return Math.round(this.min + (el.scrollLeft / maxScroll) * range);
+  }
+
+  private _onInput() {
+    this._displayValue = this.curValue;
+    this._emitEvt('range-value-update', { value: this.curValue });
   }
 
   private _emitEvt<T>(name: string, detail?: T) {
@@ -49,6 +60,21 @@ export class RangeInput extends LitElement {
     this.value = this.min;
   }
 
+  private _setInitialPos() {
+    const track = this.rangeSliderTrackRef.value;
+    if (!track) return;
+    const range = this.max - this.min;
+    if (range <= 0) return;
+    requestAnimationFrame(() => {
+      const el = this.rangeSliderTrackRef.value;
+      if (!el) return;
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+      const t = (this.value - this.min) / range;
+      el.scrollLeft = t * maxScroll;
+      this._onInput();
+    });
+  }
+
   private _onPointerDown(event: PointerEvent) {
     event.stopPropagation();
     this.rangeSliderTrackRef.value?.setPointerCapture(event.pointerId);
@@ -60,10 +86,11 @@ export class RangeInput extends LitElement {
     event.stopPropagation();
     if (this._isDragging) {
       const deltaX = event.clientX - this._dragStartX;
-      this._dragStartX = event.clientX;
       if(this.rangeSliderTrackRef.value){
-        window.requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
           this.rangeSliderTrackRef.value.scrollLeft -= deltaX;
+          this._dragStartX = event.clientX;
+          this._onInput();
         })
       }
     }
@@ -75,23 +102,44 @@ export class RangeInput extends LitElement {
     this._isDragging = false;
   }
 
+  protected firstUpdated(_changed: PropertyValues) {
+    super.firstUpdated(_changed);
+    this._setInitialPos();
+  }
+
+  protected updated(changed: PropertyValues) {
+    super.updated(changed);
+    if (changed.has('value') || changed.has('min') || changed.has('max')) {
+      this._setInitialPos();
+    }
+  }
+
   render() {
     return html`
       <div class="range-input">
-        <div class="range-value">${this.value}</div>
-        <div class=${classMap({ 'range-slider': true, 'is-dragging': this._isDragging })}>
-          <div 
-            class="range-slider-track"
+        <div class="range-value">${this._displayValue}</div>
+        <div 
+          class=${classMap({ 
+            'range-slider': true, 
+            'is-dragging': this._isDragging 
+          })}
+        >
+          <div class="slider-track"
             ${ref(this.rangeSliderTrackRef)}
             @pointerdown=${this._onPointerDown}
             @pointermove=${this._onPointerMove}
             @pointerup=${this._onPointerUp}
             @pointercancel=${this._onPointerUp}
           >
-            ${Array.from({ length: 40 }).map((_, index) => html`
-              <div class="track-tick" data-tick-idx=${index}></div>
-            `)}
+            <div 
+              class="range-slider-content"
+            >
+              ${Array.from({ length: 40 }).map((_, index) => html`
+                <div class="track-tick" data-tick-idx=${index}></div>
+              `)}
+            </div>
           </div>
+          <div class="range-value-indicator"></div>
         </div>
         <div class="range-reset" @click=${this._onReset}>
           <img src=${resetIcon} alt="Reset" class="reset-icon"/>

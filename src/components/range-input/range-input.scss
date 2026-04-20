@@ -15,34 +15,82 @@
     flex: 0 0 auto;
     padding: 10px;
     color: $color-action-primary;
+    width: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .range-slider{
+    cursor: grab;
     position: relative;
     flex: 1 1 auto;
-    cursor: grab;
+    overflow: hidden;
+    user-select: none;
+    height: 41px;
+    display: flex;
+    align-items: center;
     &.is-dragging {
       cursor: grabbing;
     }
     overflow: hidden;
-    .range-slider-track{
-      @include no-scrollbar;
+    .slider-track{
+      flex: 1 1 auto;
+      overflow: hidden;
+      position: relative;
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: 4px;
-      overflow-x: auto;
-      max-width: 100%;
-      padding: 0 114px;
-      user-select: none;
-      .track-tick{
+      overflow: hidden;
+      box-sizing: border-box;
+      .range-slider-content{
         flex: 0 0 auto;
-        width: 2px;
-        height: 15px;
-        background-color: black;
-        &:first-of-type, &:last-of-type, &:nth-child(10n){
-          height: 30px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 5px 105px;
+        overflow: hidden;
+        box-sizing: border-box;
+        .track-tick{
+          position: relative;
+          flex: 0 0 auto;
+          width: 2px;
+          margin: 0 2px;
+          height: 15px;
+          &:after{
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: -3px;
+            width: 2px;
+            background-color: black;
+          }
+          &:first-of-type, &:last-of-type, &:nth-child(10n){
+            height: 30px;
+          }
+          &:first-of-type{
+            margin-left: 0;
+            &:after{
+              right: 0;
+            }
+          }
+          &:last-of-type{
+            margin-right: 0;
+            &:after{
+              right: -2px;
+            }
+          }
         }
       }
+    }
+    .range-value-indicator{
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      transform: translateX(-50%);
+      background-color: $color-action-primary;
     }
     &:before,&:after{
       content: '';
@@ -78,14 +126,5 @@
     &:active{
       background-color: #e0e0e0;
     }
-  }
-  &:after{
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background-color: $color-action-primary;
   }
 }
