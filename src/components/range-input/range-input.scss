@@ -63,10 +63,13 @@
             bottom: 0;
             right: -3px;
             width: 2px;
-            background-color: black;
+            background-color: #b5b5b5;
           }
           &:first-of-type, &:last-of-type, &:nth-child(10n){
-            height: 30px;
+            height: 20px;
+            &:after{
+              background-color: #757575;
+            }
           }
           &:first-of-type{
             margin-left: 0;
@@ -74,10 +77,11 @@
               right: 0;
             }
           }
-          &:last-of-type{
-            margin-right: 0;
+          &.is-delta{
+            height: 20px;
             &:after{
-              right: -2px;
+              width: 3px;
+              background-color: $color-action-primary;
             }
           }
         }

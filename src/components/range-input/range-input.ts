@@ -102,6 +102,22 @@ export class RangeInput extends LitElement {
     this._isDragging = false;
   }
 
+  private _isDeltaTick(tickIdx: number) {
+    const inRangeIdx = Math.ceil(tickIdx/40 * (this.max - this.min) + this.min);
+    return (
+      (
+        this.curValue < this.value && 
+        inRangeIdx >= this.curValue &&
+        inRangeIdx <= this.value
+      ) ||
+      (
+        this.curValue > this.value && 
+        inRangeIdx < this.curValue &&
+        inRangeIdx >= this.value
+      )
+    )
+  }
+
   protected firstUpdated(_changed: PropertyValues) {
     super.firstUpdated(_changed);
     this._setInitialPos();
@@ -135,7 +151,10 @@ export class RangeInput extends LitElement {
               class="range-slider-content"
             >
               ${Array.from({ length: 40 }).map((_, index) => html`
-                <div class="track-tick" data-tick-idx=${index}></div>
+                <div class=${classMap({
+                  'track-tick': true,
+                  'is-delta': this._isDeltaTick(index)
+                })} data-tick-idx=${index}></div>
               `)}
             </div>
           </div>
