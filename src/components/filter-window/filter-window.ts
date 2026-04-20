@@ -7,6 +7,8 @@ import Deferred from '@/models/deferred.ts';
 import elementStyles from './filter-window.scss?inline'
 import { type ModalWindow } from '@/components/modal-window/modal-window.ts'
 import '@/components/modal-window/modal-window.ts';
+import '@/components/range-input/range-input.ts'
+import '@/components/toggle-switch/toggle-switch.ts'
 import { cloneCanvas } from '@/utils/canvas';
 
 import rotateIcon from '@/assets/rotate.png'
@@ -113,7 +115,57 @@ export class FilterWindow extends LitElement {
           </div>
           <div class="controls-wrapper">
             <div class="control-details">
-              
+              ${
+                this._selectedAction === 'brightness' ? html`
+                  <range-input
+                    value=${this._filterOptions?.brightness ?? 0}
+                    min=${0}
+                    max=${100}
+                    @range-value-update=${(event: CustomEvent<{ value: number }>) => this._filterOptions.brightness = event.detail.value}
+                  ></range-input>
+                ` : nothing
+              }
+              ${
+                this._selectedAction === 'contrast' ? html`
+                  <range-input
+                    value=${this._filterOptions?.contrast ?? 0}
+                    min=${0}
+                    max=${100}
+                    @range-value-update=${(event: CustomEvent<{ value: number }>) => this._filterOptions.contrast = event.detail.value}
+                  ></range-input>
+                ` : nothing
+              }
+              ${
+                this._selectedAction === 'blur' ? html`
+                  <range-input
+                    value=${this._filterOptions?.blur ?? 0}
+                    min=${0}
+                    max=${100}
+                    @range-value-update=${(event: CustomEvent<{ value: number }>) => this._filterOptions.blur = event.detail.value}
+                  ></range-input>
+                ` : nothing
+              }
+              ${
+                this._selectedAction === 'grayscale' ? html`
+                  <toggle-switch
+                    value=${this._filterOptions?.grayscale ?? false}
+                    @toggle-switch-changed=${(event: CustomEvent<{ value: boolean }>) => this._filterOptions.grayscale = event.detail.value}
+                  ></toggle-switch>
+                ` : nothing
+              }
+              ${
+                this._selectedAction === 'rotate' ? html`
+                  <input 
+                    type="range" 
+                    class="rotate-input" 
+                    value=${this._filterOptions?.rotate ?? 0} 
+                    @input=${(event: Event) => this._filterOptions.rotate = (event.target as HTMLInputElement).valueAsNumber} 
+                    min=${0}
+                    max=${360}
+                    step=${90}
+                  />
+                ` : nothing
+              }
             </div>
             <div class="control-actions">
               <div class="actions-inner">
