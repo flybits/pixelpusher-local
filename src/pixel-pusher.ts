@@ -10,9 +10,13 @@ import { applyFileExtension, pickFile } from './utils/file'
 import { canvasFromFile, resizeCanvas } from './utils/canvas'
 import { CropperWindow } from '@/components/cropper-window/cropper-window.ts'
 import { FilterWindow } from '@/components/filter-window/filter-window.ts'
+import { RangeInput } from '@/components/range-input/range-input.ts'
+import { ToggleSwitch } from '@/components/toggle-switch/toggle-switch.ts'
 
 export { CropperWindow } from '@/components/cropper-window/cropper-window.ts'
 export { FilterWindow } from '@/components/filter-window/filter-window.ts'
+export { RangeInput } from '@/components/range-input/range-input.ts'
+export { ToggleSwitch } from '@/components/toggle-switch/toggle-switch.ts'
 
 export type PixelPusherFileSelectEvent = CustomEvent<File>
 export type PixelPusherImageEditedEvent = CustomEvent<{ 
@@ -131,7 +135,7 @@ export class PixelPusher extends LitElement {
   }
 
   get hasFilterConfigs(): boolean {
-    return this.blurPx > 0 || this.rotateDeg > 0 || this.grayscale;
+    return this.blurPx > 0 || this.rotateDeg > 0 || this.grayscale || this.brightness !== 50 || this.contrast !== 50;
   }
 
   async openFilePicker() {
@@ -332,6 +336,7 @@ export class PixelPusher extends LitElement {
             </div>
           </slot>
         </div>
+
         <cropper-window 
           ${ref(this.cropperWindowRef)}
           title=${this.cropModalTitle} 
