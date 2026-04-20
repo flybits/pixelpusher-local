@@ -19,6 +19,7 @@ import grayscaleIcon from '@/assets/grayscale.png'
 import imgQualityIcon from '@/assets/img-quality.png'
 
 export type FilteredImageEvent = CustomEvent<{ canvas: HTMLCanvasElement }>
+export type ImageFilteredCancelledEvent = CustomEvent<void>
 
 export type FilterOptions = {
   blur: number,
@@ -36,14 +37,14 @@ export class FilterWindow extends LitElement {
   private _deferredReq: Deferred<HTMLCanvasElement> | null = null;
   private _editCanvas: HTMLCanvasElement | null = null;
   private _filterOptions: FilterOptions | null = null;
-  
+  private _interactiveMode: boolean = false;
+
   @state()
   private _selectedAction: string | null = null;
 
   @state()
   private _previewCanvas: HTMLCanvasElement | null = null;
 
-  
   @property({ type: String, attribute: 'title' })
   title: string = 'Edit image';
 
@@ -52,6 +53,7 @@ export class FilterWindow extends LitElement {
     filterOptions: FilterOptions,
     deferredRequest: Deferred<HTMLCanvasElement>
   ) {
+    this._interactiveMode = true;
     this.applyFilters(canvas, filterOptions, deferredRequest);
     this.modalWindowRef.value?.open();
   }
@@ -86,10 +88,41 @@ export class FilterWindow extends LitElement {
     }
 
     this._previewCanvas = applyRasterTransforms(this._editCanvas, opts);
+
+    if(!this._interactiveMode) {
+      this.commitFilters();
+    }
+  }
+
+  commitFilters() {
+    this._deferredReq?.resolve(this._previewCanvas);
+    this._emitEvt('image-filtered', { canvas: this._previewCanvas });
+    this.close();
+  }
+
+  skipEffects() {
+    this._deferredReq?.resolve(this._editCanvas);
+    this._emitEvt('image-filtered', { 
+      skipEffects: true,
+      canvas: this._editCanvas 
+    });
+    this.close();
+  }
+
+  cancel() {
+    this._deferredReq?.reject();
+    this._emitEvt('image-filtered-cancelled');
+    this.close();
   }
 
   close() {
     this.modalWindowRef.value?.close();
+    this._resetState();
+    this._interactiveMode = false;
+    this._selectedAction = null;
+    this._filterOptions = null;
+    this._previewCanvas = null;
+    this._editCanvas = null;
   }
 
   private _resetState() {
@@ -243,8 +276,11 @@ export class FilterWindow extends LitElement {
           </div>
         </div>
         <div class="edit-window-footer" slot="footer">
-          <button class="edit-footer-btn ghost cancel" @click=${this.close}>Cancel</button>
-          <button class="edit-footer-btn primary crop">Save</button>
+          <button class="edit-footer-btn ghost cancel" @click=${this.cancel}>Cancel</button>
+          <div class="btn-group">
+            <button class="edit-footer-btn ghost crop" @click=${this.skipEffects}>Skip effects</button>
+            <button class="edit-footer-btn primary crop" @click=${this.commitFilters}>Apply</button>
+          </div>
         </div>
       </modal-window>
     `
@@ -260,5 +296,6 @@ declare global {
 
   interface HTMLElementEventMap {
     'image-filtered': FilteredImageEvent
+    'image-filtered-cancelled': ImageFilteredCancelledEvent
   }
 }
