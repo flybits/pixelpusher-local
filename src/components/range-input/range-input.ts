@@ -79,7 +79,7 @@ export class RangeInput extends LitElement {
     return html`
       <div class="range-input">
         <div class="range-value">${this.value}</div>
-        <div class="range-slider">
+        <div class=${classMap({ 'range-slider': true, 'is-dragging': this._isDragging })}>
           <div 
             class="range-slider-track"
             ${ref(this.rangeSliderTrackRef)}

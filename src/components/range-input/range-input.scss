@@ -17,8 +17,12 @@
     color: $color-action-primary;
   }
   .range-slider{
+    position: relative;
     flex: 1 1 auto;
     cursor: grab;
+    &.is-dragging {
+      cursor: grabbing;
+    }
     overflow: hidden;
     .range-slider-track{
       @include no-scrollbar;
@@ -39,15 +43,22 @@
           height: 30px;
         }
       }
-      &:after{
-        content: '';
-        position: absolute;
-        left: 50%;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background-color: $color-action-primary;
-      }
+    }
+    &:before,&:after{
+      content: '';
+      position: absolute;
+      z-index: 1;
+      top: 0;
+      bottom: 0;
+      width: 40px;
+    }
+    &:before{
+      left: 0;
+      background: linear-gradient(to right, white, transparent);
+    }
+    &:after{
+      right: 0;
+      background: linear-gradient(to left, white, transparent);
     }
   }
   .range-reset{
@@ -67,5 +78,14 @@
     &:active{
       background-color: #e0e0e0;
     }
+  }
+  &:after{
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: $color-action-primary;
   }
 }
