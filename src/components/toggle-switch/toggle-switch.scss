@@ -4,6 +4,16 @@
 .toggle-switch{
   @include clickable;
   display: inline-flex;
+
+  // Visual state follows aria-checked / this.value — not native :checked alone (avoids label/input desync).
+  &[aria-checked="true"] .switch-label {
+    background: $color-action-primary;
+    &:after {
+      left: calc(100% - 2px);
+      transform: translateX(-100%);
+    }
+  }
+
   .switch-input[type=checkbox]{
     position: absolute;
     height: 0;
@@ -12,13 +22,6 @@
     margin: 0;
     padding: 0;
     visibility: hidden;
-    &:checked + label {
-      background: $color-action-primary;
-      &:after {
-        left: calc(100% - 2px);
-        transform: translateX(-100%);
-      }
-    }
   }
 
   .switch-label {
@@ -52,10 +55,8 @@
   &.disabled{
     opacity: 0.5;
     cursor: default;
-    .switch-input[type=checkbox]{
-      &:checked + label {
-        background: gray;
-      }
+    &[aria-checked="true"] .switch-label {
+      background: gray;
     }
     .switch-label{
       cursor: default;
