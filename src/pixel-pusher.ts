@@ -2,14 +2,24 @@ import { LitElement, html, unsafeCSS } from 'lit'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { customElement, property, state } from 'lit/decorators.js'
 import { classMap } from 'lit/directives/class-map.js'
+
+import Deferred from './models/deferred';
 import uploadIcon from './assets/upload.svg'
 import elementStyles from './pixel-pusher.scss?inline'
+import { applyFileExtension, pickFile } from './utils/file'
+import { canvasFromFile, resizeCanvas } from './utils/canvas'
+import { CropperWindow } from '@/components/cropper-window/cropper-window.ts'
+import { FilterWindow } from '@/components/filter-window/filter-window.ts'
 
-import { pickFile } from './utils/file'
-import { CropperWindow, type CroppedImageEvent } from '@/components/cropper-window/cropper-window.ts'
+export { CropperWindow } from '@/components/cropper-window/cropper-window.ts'
+export { FilterWindow } from '@/components/filter-window/filter-window.ts'
 
-export { CropperWindow, type CroppedImageEvent }
 export type PixelPusherFileSelectEvent = CustomEvent<File>
+export type PixelPusherImageEditedEvent = CustomEvent<{ 
+  canvas: HTMLCanvasElement, 
+  blob: Blob, 
+  file: File 
+}>
 
 const hasInvalidFileTypes = (files: File[]) => {
   return files.some(file => !file.type.startsWith('image/'));
@@ -24,12 +34,43 @@ const hasInvalidFileTypes = (files: File[]) => {
 @customElement('pixel-pusher')
 export class PixelPusher extends LitElement {
   private cropperWindowRef = createRef<CropperWindow>()
+  private filterWindowRef = createRef<FilterWindow>()
   
   /**
    * Image aspect ratio in decimal format (width / height)
    */
   @property({ type: Number, attribute: 'aspect-ratio' })
   aspectRatio = 0;
+
+  /**
+   * Blur amount in pixels
+   */
+  @property({ type: Number, attribute: 'blur' })
+  blurPx = 0;
+
+  /**
+   * Rotation amount in degrees
+   */
+  @property({ type: Number, attribute: 'rotate' })
+  rotateDeg = 0;
+
+  /**
+   * Whether to apply grayscale filter
+   */
+  @property({ type: Boolean, attribute: 'grayscale' })
+  grayscale = false;
+
+  /**
+   * Brightness amount in percentage
+   */
+  @property({ type: Number, attribute: 'brightness' })
+  brightness = 50;
+
+  /**
+   * Contrast amount in percentage
+   */
+  @property({ type: Number, attribute: 'contrast' })
+  contrast = 50;
 
   /**
    * Maximum width of the image in pixels
@@ -50,13 +91,25 @@ export class PixelPusher extends LitElement {
   quality;
 
   /**
+   * Whether to show interactive filters
+   */
+  @property({ type: Boolean, attribute: 'interactive-filters' })
+  interactiveFilters = false;
+
+  /**
    * Title of the crop modal
    */
   @property({ type: String, attribute: 'crop-modal-title' })
-  cropModalTitle = 'Crop Image';
+  cropModalTitle = 'Crop image';
+  
+  /**
+   * Title of the filter modal
+   */
+  @property({ type: String, attribute: 'filter-modal-title' })
+  filterModalTitle = 'Edit image';
 
-  private _croppedFile: File | null = null;
-  private _croppedBlob: Blob | null = null;
+  private _editCanvas: HTMLCanvasElement | null = null;
+  private _sourceFile: File | null = null;
   
   @state()
   private croppedPreviewURL: string | null = null;
@@ -66,10 +119,19 @@ export class PixelPusher extends LitElement {
   
   @property({ type: Boolean, reflect: true, attribute: 'trigger-drag-over' })
   _dragOver: boolean = false;
+  
 
   get defaultSlotContent(): HTMLElement | null {
     const defaultSlot = this.shadowRoot?.querySelector('slot:not([name])') as HTMLSlotElement | null;
     return defaultSlot?.assignedElements({flatten: true})[0] as HTMLElement | null;
+  }
+
+  get hasCropConfigs(): boolean {
+    return this.aspectRatio > 0;
+  }
+
+  get hasFilterConfigs(): boolean {
+    return this.blurPx > 0 || this.rotateDeg > 0 || this.grayscale;
   }
 
   async openFilePicker() {
@@ -88,22 +150,103 @@ export class PixelPusher extends LitElement {
     }
   }
 
-  private _selectFile(file: File) {
+  private async _selectFile(file: File) {
     console.log('file', file)
     if(file){
+      this._sourceFile = file;
       this._emitEvt('file-selected', file);
+      try{
+        this._editCanvas = await canvasFromFile(file);
+      } catch(error){
+        console.error(error)
+        return;
+      }
 
-      if(this.aspectRatio > 0){
+      if(this.hasCropConfigs){
+        const deferredCrop = new Deferred<HTMLCanvasElement>();
         this.cropperWindowRef.value?.open(file, {
           aspectRatio: this.aspectRatio,
-          maxWidth: this.maxWidth,
-          maxHeight: this.maxHeight,
-          quality: this.quality
-        });
+        }, deferredCrop);
+
+        try{
+          this._editCanvas = await deferredCrop.promise;
+        } catch(error){
+          console.error(error)
+          return;
+        }
       }
+
+      // apply filters
+      if(this.hasFilterConfigs || this.interactiveFilters){
+        const deferredFilter = new Deferred<HTMLCanvasElement>();
+        const filterFn = this.interactiveFilters 
+          ? this.filterWindowRef.value?.open 
+          : this.filterWindowRef.value?.applyFilters;
+        filterFn.call(
+          this.filterWindowRef.value, 
+          this._editCanvas, 
+          {
+            blur: this.blurPx,
+            grayscale: this.grayscale,
+            rotate: this.rotateDeg,
+            brightness: this.brightness,
+            contrast: this.contrast,
+          },
+          deferredFilter
+        );
+
+        try{
+          this._editCanvas = await deferredFilter.promise;
+        } catch(error){
+          console.error(error)
+          return;
+        }
+      }
+
+      this._commitEditCanvas();
     }
   }
-  
+
+  private _commitEditCanvas() {
+    if(this._editCanvas){
+      let outputCanvas = this._editCanvas;
+      if(this.maxWidth > 0 || this.maxHeight > 0){
+        outputCanvas = resizeCanvas(
+          this._editCanvas,
+          this.maxWidth ?? 0,
+          this.maxHeight ?? 0
+        )
+      }
+
+      const quality = this.quality || 1;
+      let resolvedType = this._sourceFile.type;
+      let resolvedName = this._sourceFile.name;
+      if(
+        (this.quality && this._sourceFile.type !== 'image/jpeg') ||
+        this._sourceFile.type === 'image/svg+xml'
+      ){
+        resolvedType = 'image/webp';
+        resolvedName = applyFileExtension(this._sourceFile.name, resolvedType);
+      }
+
+      outputCanvas.toBlob(
+        (blob) => {
+          if (!blob) return
+
+          if(this.croppedPreviewURL){
+            URL.revokeObjectURL(this.croppedPreviewURL);
+          }
+          this.croppedPreviewURL = URL.createObjectURL(blob);
+          this._updateChildPreviews();
+          const file = new File([blob], resolvedName, { type: resolvedType })
+          this._emitEvt('image-edited', { canvas: outputCanvas, blob, file })
+        },
+        resolvedType,
+        quality
+      )
+    }
+  }
+
   private _handleDragEvt(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -154,24 +297,6 @@ export class PixelPusher extends LitElement {
     }
   }
 
-  private _onImageCropped(event: CroppedImageEvent) {
-    this._croppedFile = event.detail?.file ?? null;
-    this._croppedBlob = event.detail?.blob ?? null;
-    if(this.croppedPreviewURL){
-      URL.revokeObjectURL(this.croppedPreviewURL);
-    }
-    if(this._croppedBlob){
-      this.croppedPreviewURL = URL.createObjectURL(this._croppedBlob);
-      this._updateChildPreviews();
-
-      event.stopPropagation();
-      this._emitEvt('image-cropped', { 
-        blob: this._croppedBlob, 
-        file: this._croppedFile 
-      });
-    }
-  }
-
   private _emitEvt<T>(name: string, detail?: T) {
     this.dispatchEvent(new CustomEvent(name, { 
       detail,
@@ -210,8 +335,11 @@ export class PixelPusher extends LitElement {
         <cropper-window 
           ${ref(this.cropperWindowRef)}
           title=${this.cropModalTitle} 
-          @image-cropped=${this._onImageCropped}
-        />
+        ></cropper-window>
+        <filter-window
+          ${ref(this.filterWindowRef)}
+          title=${this.filterModalTitle}
+        ></filter-window>
       </div>
     `
   }
@@ -226,6 +354,6 @@ declare global {
 
   interface HTMLElementEventMap {
     'file-selected': PixelPusherFileSelectEvent
-    'image-cropped': CroppedImageEvent
+    'image-edited': PixelPusherImageEditedEvent
   }
 }

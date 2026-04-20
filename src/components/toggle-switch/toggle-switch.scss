@@ -1,0 +1,65 @@
+@use '@/_mixins' as *;
+@use '@/_variables' as *;
+
+.toggle-switch{
+  @include clickable;
+  display: inline-flex;
+
+  // Visual state follows aria-checked / this.value — not native :checked alone (avoids label/input desync).
+  &[aria-checked="true"] .switch-label {
+    background: $color-action-primary;
+    &:after {
+      left: calc(100% - 2px);
+      transform: translateX(-100%);
+    }
+  }
+
+  .switch-input[type=checkbox]{
+    position: absolute;
+    height: 0;
+    width: 0;
+    min-width: auto;
+    margin: 0;
+    padding: 0;
+    visibility: hidden;
+  }
+
+  .switch-label {
+    $dimWidth: 35px;
+    $dimHeight: 20px;
+    $dimKnob: $dimHeight - 4;
+    cursor: pointer;
+    text-indent: -9999px;
+    width: $dimWidth;
+    height: $dimHeight;
+    background: grey;
+    display: block;
+    border-radius: $dimHeight;
+    position: relative;
+    &:after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: $dimKnob;
+      height: $dimKnob;
+      background: #fff;
+      border-radius: $dimKnob;
+      transition: 0.3s;
+    }
+    &:active:after {
+      width: $dimKnob + 5;
+    }
+  }
+
+  &.disabled{
+    opacity: 0.5;
+    cursor: default;
+    &[aria-checked="true"] .switch-label {
+      background: gray;
+    }
+    .switch-label{
+      cursor: default;
+    }
+  }
+}

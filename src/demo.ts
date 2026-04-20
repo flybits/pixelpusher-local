@@ -24,11 +24,11 @@ function setupOutput(
   })
 
   if (mode === 'crop') {
-    el.addEventListener('image-cropped', (e: Event) => {
+    el.addEventListener('image-edited', (e: Event) => {
       const { blob, file } = (e as CustomEvent<{ blob: Blob; file: File }>).detail
       const base = out.textContent || ''
       out.textContent =
-        `${base}\n\nimage-cropped\n${fileLine(file)}\nblob: ${blob.size} bytes`
+        `${base}\n\nimage-edited\n${fileLine(file)}\nblob: ${blob.size} bytes`
     })
   }
 }

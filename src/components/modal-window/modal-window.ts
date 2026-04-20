@@ -48,8 +48,8 @@ export class ModalWindow extends LitElement {
   private _emitEvt<T>(name: string, detail?: T) {
     this.dispatchEvent(new CustomEvent(name, { 
       detail,
-      bubbles: true,
-      composed: true
+      bubbles: false,
+      composed: false
     }))
   }
 

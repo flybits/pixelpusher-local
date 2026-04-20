@@ -1,0 +1,134 @@
+@use '@/_mixins.scss' as *;
+@use '@/_variables.scss' as *;
+
+.range-input{
+  position: relative;
+  display: flex;
+  max-width: 500px;
+  width: 300px;
+  align-items: center;
+  background-color: white;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  overflow: hidden;
+  .range-value{
+    flex: 0 0 auto;
+    padding: 10px;
+    color: $color-action-primary;
+    width: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .range-slider{
+    cursor: grab;
+    position: relative;
+    flex: 1 1 auto;
+    overflow: hidden;
+    user-select: none;
+    height: 41px;
+    display: flex;
+    align-items: center;
+    &.is-dragging {
+      cursor: grabbing;
+    }
+    overflow: hidden;
+    .slider-track{
+      flex: 1 1 auto;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      overflow: hidden;
+      box-sizing: border-box;
+      .range-slider-content{
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 5px 105px;
+        overflow: hidden;
+        box-sizing: border-box;
+        .track-tick{
+          position: relative;
+          flex: 0 0 auto;
+          width: 2px;
+          margin: 0 2px;
+          height: 15px;
+          &:after{
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: -3px;
+            width: 2px;
+            background-color: #b5b5b5;
+          }
+          &:first-of-type, &:last-of-type, &:nth-child(10n){
+            height: 20px;
+            &:after{
+              background-color: #757575;
+            }
+          }
+          &:first-of-type{
+            margin-left: 0;
+            &:after{
+              right: 0;
+            }
+          }
+          &.is-delta{
+            height: 20px;
+            &:after{
+              width: 3px;
+              background-color: $color-action-primary;
+            }
+          }
+        }
+      }
+    }
+    .range-value-indicator{
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      transform: translateX(-50%);
+      background-color: $color-action-primary;
+    }
+    &:before,&:after{
+      content: '';
+      position: absolute;
+      z-index: 1;
+      top: 0;
+      bottom: 0;
+      width: 40px;
+    }
+    &:before{
+      left: 0;
+      background: linear-gradient(to right, white, transparent);
+    }
+    &:after{
+      right: 0;
+      background: linear-gradient(to left, white, transparent);
+    }
+  }
+  .range-reset{
+    flex: 0 0 auto;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .reset-icon{
+      width: 20px;
+      height: 20px;
+    }
+    &:hover{
+      background-color: #f0f0f0;
+    }
+    &:active{
+      background-color: #e0e0e0;
+    }
+  }
+}
