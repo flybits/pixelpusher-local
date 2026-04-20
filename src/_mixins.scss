@@ -1,5 +1,13 @@
 @use '@/_variables' as *;
 
+@mixin no-scrollbar{
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @mixin clickable{
   user-select:none;
   cursor: pointer;
