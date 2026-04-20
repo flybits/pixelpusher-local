@@ -9,7 +9,7 @@ import { type ModalWindow } from '@/components/modal-window/modal-window.ts'
 import '@/components/modal-window/modal-window.ts';
 import '@/components/range-input/range-input.ts'
 import '@/components/toggle-switch/toggle-switch.ts'
-import { cloneCanvas } from '@/utils/canvas';
+import { applyRasterTransforms, cloneCanvas, type RasterTransformOptions } from '@/utils/canvas';
 
 import rotateIcon from '@/assets/rotate.png'
 import brightnessIcon from '@/assets/brightness.png'
@@ -69,9 +69,23 @@ export class FilterWindow extends LitElement {
   }
 
   updatePreview(filterOptions: FilterOptions) {
-    const ctx = this._previewCanvas.getContext('2d');
-    if (!ctx) return;
-    
+    let opts: RasterTransformOptions = {
+      blurPx: filterOptions.blur,
+      grayscale: filterOptions.grayscale,
+      rotationDeg: filterOptions.rotate,
+      brightness: 1,
+      contrast: 1,
+    }
+
+    if(filterOptions.brightness && filterOptions.brightness !== 50) {
+      opts.brightness = filterOptions.brightness / 50;
+    }
+
+    if(filterOptions.contrast && filterOptions.contrast !== 50) {
+      opts.contrast = filterOptions.contrast / 50;
+    }
+
+    this._previewCanvas = applyRasterTransforms(this._editCanvas, opts);
   }
 
   close() {
@@ -121,7 +135,7 @@ export class FilterWindow extends LitElement {
                     value=${this._filterOptions?.brightness ?? 0}
                     min=${0}
                     max=${100}
-                    @range-value-update=${(event: CustomEvent<{ value: number }>) => this._filterOptions.brightness = event.detail.value}
+                    @range-value-update=${(event: CustomEvent<{ value: number }>) => {this._filterOptions.brightness = event.detail.value; this.updatePreview(this._filterOptions)}}
                   ></range-input>
                 ` : nothing
               }
@@ -131,7 +145,7 @@ export class FilterWindow extends LitElement {
                     value=${this._filterOptions?.contrast ?? 0}
                     min=${0}
                     max=${100}
-                    @range-value-update=${(event: CustomEvent<{ value: number }>) => this._filterOptions.contrast = event.detail.value}
+                    @range-value-update=${(event: CustomEvent<{ value: number }>) => {this._filterOptions.contrast = event.detail.value; this.updatePreview(this._filterOptions)}}
                   ></range-input>
                 ` : nothing
               }
@@ -141,7 +155,7 @@ export class FilterWindow extends LitElement {
                     value=${this._filterOptions?.blur ?? 0}
                     min=${0}
                     max=${100}
-                    @range-value-update=${(event: CustomEvent<{ value: number }>) => this._filterOptions.blur = event.detail.value}
+                    @range-value-update=${(event: CustomEvent<{ value: number }>) => {this._filterOptions.blur = event.detail.value; this.updatePreview(this._filterOptions)}}
                   ></range-input>
                 ` : nothing
               }
@@ -149,7 +163,7 @@ export class FilterWindow extends LitElement {
                 this._selectedAction === 'grayscale' ? html`
                   <toggle-switch
                     value=${this._filterOptions?.grayscale ?? false}
-                    @toggle-switch-changed=${(event: CustomEvent<{ value: boolean }>) => this._filterOptions.grayscale = event.detail.value}
+                    @toggle-switch-changed=${(event: CustomEvent<{ value: boolean }>) => {this._filterOptions.grayscale = event.detail.value; this.updatePreview(this._filterOptions)}}
                   ></toggle-switch>
                 ` : nothing
               }
@@ -159,7 +173,7 @@ export class FilterWindow extends LitElement {
                     type="range" 
                     class="rotate-input" 
                     value=${this._filterOptions?.rotate ?? 0} 
-                    @input=${(event: Event) => this._filterOptions.rotate = (event.target as HTMLInputElement).valueAsNumber} 
+                    @input=${(event: Event) => {this._filterOptions.rotate = (event.target as HTMLInputElement).valueAsNumber; this.updatePreview(this._filterOptions)}} 
                     min=${0}
                     max=${360}
                     step=${90}
@@ -174,6 +188,7 @@ export class FilterWindow extends LitElement {
                     'action-item': true,
                     'selected': this._isSelectedAction('rotate')
                   })} 
+                  title="Rotate"
                   @click=${() => this._selectAction('rotate')}
                 >
                   <img class="action-icon" src=${rotateIcon} alt="Rotate" />
@@ -184,6 +199,7 @@ export class FilterWindow extends LitElement {
                     'action-item': true,
                     'selected': this._isSelectedAction('brightness')
                   })} 
+                  title="Brightness"
                   @click=${() => this._selectAction('brightness')}
                 >
                   <img class="action-icon" src=${brightnessIcon} alt="Brightness" />
@@ -194,6 +210,7 @@ export class FilterWindow extends LitElement {
                     'action-item': true,
                     'selected': this._isSelectedAction('contrast')
                   })} 
+                  title="Contrast"
                   @click=${() => this._selectAction('contrast')}
                 >
                   <img class="action-icon" src=${contrastIcon} alt="Contrast" />
@@ -203,7 +220,8 @@ export class FilterWindow extends LitElement {
                   class=${classMap({
                     'action-item': true,
                     'selected': this._isSelectedAction('blur')
-                  })} 
+                  })}
+                  title="Blur"
                   @click=${() => this._selectAction('blur')}
                 >
                   <img class="action-icon" src=${blurIcon} alt="Blur" />
@@ -214,6 +232,7 @@ export class FilterWindow extends LitElement {
                     'action-item': true,
                     'selected': this._isSelectedAction('grayscale')
                   })} 
+                  title="Grayscale"
                   @click=${() => this._selectAction('grayscale')}
                 >
                   <img class="action-icon" src=${grayscaleIcon} alt="Grayscale" />
