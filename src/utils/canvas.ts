@@ -80,6 +80,87 @@ function normalizeAngleDeg(deg: number): number {
   return ((deg % 360) + 360) % 360
 }
 
+/**
+ * Lossless cardinal rotations (matches Canvas2D positive angle = clockwise).
+ * Avoids bilinear resampling from rotate()+drawImage, which softens 90°/180°/270° output.
+ */
+function rotateCanvasCardinalPixels(
+  source: HTMLCanvasElement,
+  rotationDeg: 90 | 180 | 270
+): HTMLCanvasElement | undefined {
+  const w = source.width
+  const h = source.height
+  const ctxSrc = source.getContext('2d')
+  if (!ctxSrc) return undefined
+
+  const imageData = ctxSrc.getImageData(0, 0, w, h)
+  const src = imageData.data
+
+  let outW: number
+  let outH: number
+  let dst: Uint8ClampedArray
+
+  if (rotationDeg === 90) {
+    outW = h
+    outH = w
+    dst = new Uint8ClampedArray(outW * outH * 4)
+    for (let sy = 0; sy < h; sy++) {
+      for (let sx = 0; sx < w; sx++) {
+        const dx = h - 1 - sy
+        const dy = sx
+        const s = (sy * w + sx) * 4
+        const d = (dy * outW + dx) * 4
+        dst[d] = src[s]
+        dst[d + 1] = src[s + 1]
+        dst[d + 2] = src[s + 2]
+        dst[d + 3] = src[s + 3]
+      }
+    }
+  } else if (rotationDeg === 270) {
+    outW = h
+    outH = w
+    dst = new Uint8ClampedArray(outW * outH * 4)
+    for (let sy = 0; sy < h; sy++) {
+      for (let sx = 0; sx < w; sx++) {
+        const dx = sy
+        const dy = w - 1 - sx
+        const s = (sy * w + sx) * 4
+        const d = (dy * outW + dx) * 4
+        dst[d] = src[s]
+        dst[d + 1] = src[s + 1]
+        dst[d + 2] = src[s + 2]
+        dst[d + 3] = src[s + 3]
+      }
+    }
+  } else {
+    outW = w
+    outH = h
+    dst = new Uint8ClampedArray(outW * outH * 4)
+    for (let sy = 0; sy < h; sy++) {
+      for (let sx = 0; sx < w; sx++) {
+        const dx = w - 1 - sx
+        const dy = h - 1 - sy
+        const s = (sy * w + sx) * 4
+        const d = (dy * outW + dx) * 4
+        dst[d] = src[s]
+        dst[d + 1] = src[s + 1]
+        dst[d + 2] = src[s + 2]
+        dst[d + 3] = src[s + 3]
+      }
+    }
+  }
+
+  const out = document.createElement('canvas')
+  out.width = outW
+  out.height = outH
+  const ctxOut = out.getContext('2d')
+  if (!ctxOut) return undefined
+  const outImage = ctxOut.createImageData(outW, outH)
+  outImage.data.set(dst)
+  ctxOut.putImageData(outImage, 0, 0)
+  return out
+}
+
 export function applyRasterTransforms(
   source: HTMLCanvasElement,
   opts: RasterTransformOptions
@@ -116,6 +197,22 @@ export function applyRasterTransforms(
     if (!ctx) return undefined
     ctx.filter = filter
     ctx.drawImage(source, 0, 0)
+    return out
+  }
+
+  const cardinal =
+    rotationDeg === 90 || rotationDeg === 180 || rotationDeg === 270
+  if (cardinal) {
+    const rotated = rotateCanvasCardinalPixels(source, rotationDeg)
+    if (!rotated) return undefined
+    if (!needsFilter) return rotated
+    const out = document.createElement('canvas')
+    out.width = rotated.width
+    out.height = rotated.height
+    const ctx = out.getContext('2d')
+    if (!ctx) return undefined
+    ctx.filter = filter
+    ctx.drawImage(rotated, 0, 0)
     return out
   }
 
