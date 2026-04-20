@@ -57,7 +57,7 @@ export class RangeInput extends LitElement {
   }
 
   private _onReset() {
-    this.value = this.min;
+    this._setInitialPos();
   }
 
   private _setInitialPos() {
