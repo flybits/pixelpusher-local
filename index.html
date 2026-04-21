@@ -16,7 +16,8 @@
           Framework-agnostic <code>&lt;pixel-pusher&gt;</code> web component for image selection,
           optional aspect-ratio cropping, optional filters (interactive or declarative), and export
           with resize and <code>quality</code>. You can pick a file by click or drag-and-drop onto
-          the trigger.
+          the trigger. Install from npm, or embed the bundled build from a CDN with no build step
+          (see below).
         </p>
       </header>
 
@@ -26,6 +27,13 @@
         <pre class="demo-code"><code>import '@flybits/pixelpusher'
 // or all-in-one:
 import '@flybits/pixelpusher/bundle'</code></pre>
+        <h3 id="cdn-heading">CDN (embed without npm)</h3>
+        <p class="demo-desc">
+          Load the same bundle as <code>@flybits/pixelpusher/bundle</code> with an ES module script
+          (do not load both this and the default entry on one page).
+        </p>
+        <pre class="demo-code"><code>&lt;script type="module" src="https://cdn.jsdelivr.net/npm/@flybits/pixelpusher@1.0.0-rc.1/dist/pixel-pusher.bundle.js"&gt;&lt;/script&gt;
+&lt;pixel-pusher aspect-ratio="1" max-width="1024" max-height="1024"&gt;&lt;/pixel-pusher&gt;</code></pre>
       </section>
 
       <section class="demo-card" aria-labelledby="demo-a-heading">

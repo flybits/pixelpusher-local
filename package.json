@@ -1,6 +1,6 @@
 {
   "name": "@flybits/pixelpusher",
-  "version": "1.0.0-rc.0",
+  "version": "1.0.0-rc.1",
   "description": "A framework-agnostic `<pixel-pusher>` web component for image file selection with optional aspect-ratio cropping, optional image filters (rotation, brightness, contrast, grayscale, blur), and optimization",
   "author": "Flybits Inc.",
   "keywords": [

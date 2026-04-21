@@ -37,6 +37,22 @@ import '@flybits/pixelpusher/bundle'
 
 Types for both entries are the same: `@flybits/pixelpusher` exports point at `./dist/src/pixel-pusher.d.ts`.
 
+### CDN embed (no npm install)
+
+You can load the same all-in-one bundle from a CDN such as [jsDelivr](https://www.jsdelivr.com/) (or any static URL that serves `dist/pixel-pusher.bundle.js`). The published package is ESM, so use `type="module"` on the script tag.
+
+```html
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/npm/@flybits/pixelpusher@1.0.0-rc.1/dist/pixel-pusher.bundle.js"
+></script>
+<pixel-pusher aspect-ratio="1" max-width="1024" max-height="1024"></pixel-pusher>
+```
+
+This is equivalent to `import '@flybits/pixelpusher/bundle'`. Do **not** combine it with the default entry on the same page; see [When to use which](#when-to-use-which).
+
+To pick up a newer release, replace `1.0.0-rc.1` in the URL or use a jsDelivr range tag (for example `@latest`); pinned versions avoid surprise upgrades.
+
 ### When to use which
 
 - **Default** — Smaller download; when your app already pulls in the same shared dependencies, or you want one shared version across components.
