@@ -12,11 +12,13 @@ import { CropperWindow } from '@/components/cropper-window/cropper-window.ts'
 import { FilterWindow } from '@/components/filter-window/filter-window.ts'
 import { RangeInput } from '@/components/range-input/range-input.ts'
 import { ToggleSwitch } from '@/components/toggle-switch/toggle-switch.ts'
+import { ModalWindow } from '@/components/modal-window/modal-window.ts'
 
 export { CropperWindow } from '@/components/cropper-window/cropper-window.ts'
 export { FilterWindow } from '@/components/filter-window/filter-window.ts'
 export { RangeInput } from '@/components/range-input/range-input.ts'
 export { ToggleSwitch } from '@/components/toggle-switch/toggle-switch.ts'
+export { ModalWindow } from '@/components/modal-window/modal-window.ts'
 
 export type PixelPusherFileSelectEvent = CustomEvent<File>
 export type PixelPusherImageEditedEvent = CustomEvent<{ 
