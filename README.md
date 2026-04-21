@@ -10,7 +10,7 @@ A framework-agnostic `<pixel-pusher>` web component for image file selection wit
 ## Install
 
 ```bash
-npm install pixelpusher
+npm install @flybits/pixelpusher
 ```
 
 Installing the package installs its dependencies. You only need extra steps if your package manager or bundler cannot resolve nested packages (uncommon).
@@ -22,7 +22,7 @@ Installing the package installs its dependencies. You only need extra steps if y
 Side-effect import so the custom element registers:
 
 ```js
-import 'pixelpusher'
+import '@flybits/pixelpusher'
 ```
 
 The default build loads shared packages from `node_modules` after install; your bundler resolves them like any other dependency.
@@ -32,10 +32,10 @@ The default build loads shared packages from `node_modules` after install; your 
 For a single module without relying on separate dependency resolution (or as one script):
 
 ```js
-import 'pixelpusher/bundle'
+import '@flybits/pixelpusher/bundle'
 ```
 
-Types for both entries are the same: `pixelpusher` exports point at `./dist/src/pixel-pusher.d.ts`.
+Types for both entries are the same: `@flybits/pixelpusher` exports point at `./dist/src/pixel-pusher.d.ts`.
 
 ### When to use which
 
@@ -244,7 +244,7 @@ el.addEventListener('image-edited', (e) => {
 
 ```vue
 <script setup lang="ts">
-import 'pixelpusher';
+import '@flybits/pixelpusher';
 
 function onFileSelected(e: CustomEvent<File>) {
   console.log(e.detail);
@@ -273,7 +273,7 @@ The package augments `HTMLElementEventMap` for these event names; you can rely o
 **React** (use `addEventListener` on a ref—React does not treat hyphenated custom events like Vue’s `@` syntax)
 
 ```tsx
-import 'pixelpusher';
+import '@flybits/pixelpusher';
 import { useEffect, useRef } from 'react';
 
 export function PixelPusherField() {

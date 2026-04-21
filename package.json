@@ -1,7 +1,19 @@
 {
-  "name": "pixelpusher",
-  "version": "0.0.0",
-  "description": "Lit web component (pixel-pusher). Default build keeps lit and cropperjs external (resolved via dependencies); dist/pixel-pusher.bundle.js inlines both for single-file use.",
+  "name": "@flybits/pixelpusher",
+  "version": "1.0.0-rc.0",
+  "description": "A framework-agnostic `<pixel-pusher>` web component for image file selection with optional aspect-ratio cropping, optional image filters (rotation, brightness, contrast, grayscale, blur), and optimization",
+  "author": "Flybits Inc.",
+  "keywords": [
+    "web-components",
+    "lit",
+    "custom-element",
+    "image",
+    "crop",
+    "cropper",
+    "image-processing",
+    "typescript",
+    "file-upload"
+  ],
   "type": "module",
   "files": [
     "dist"
@@ -49,5 +61,9 @@
     "vite": "^8.0.4",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.1.4"
+  },
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
   }
 }
