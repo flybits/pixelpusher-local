@@ -149,14 +149,14 @@ export class PixelPusher extends LitElement {
   
       const file = files?.[0];
       if (file) {
-        this._selectFile(file);
+        this.selectFile(file);
       }
     } catch(error){
       console.error(error)
     }
   }
 
-  private async _selectFile(file: File) {
+  async selectFile(file: File) {
     console.log('file', file)
     if(file){
       this._sourceFile = file;
@@ -280,7 +280,7 @@ export class PixelPusher extends LitElement {
       this._dragOver = false;
       this._dragOverInvalid = false;
       if(selectedFiles?.length > 0 && !hasInvalidFileTypes(selectedFiles)){
-        this._selectFile(selectedFiles[0]);
+        this.selectFile(selectedFiles[0]);
       }
     }
   }
