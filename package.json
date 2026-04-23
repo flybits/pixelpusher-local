@@ -3,6 +3,10 @@
   "version": "1.0.0-rc.2",
   "description": "A framework-agnostic `<pixel-pusher>` web component for image file selection with optional aspect-ratio cropping, optional image filters (rotation, brightness, contrast, grayscale, blur), and optimization",
   "author": "Flybits Inc.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Flybits/pixelpusher-local.git"
+  },
   "keywords": [
     "web-components",
     "lit",
