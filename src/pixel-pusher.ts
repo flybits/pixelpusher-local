@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS } from 'lit'
+import { LitElement, html, nothing, unsafeCSS } from 'lit'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { customElement, property, state } from 'lit/decorators.js'
 import { classMap } from 'lit/directives/class-map.js'
@@ -113,6 +113,9 @@ export class PixelPusher extends LitElement {
    */
   @property({ type: String, attribute: 'filter-modal-title' })
   filterModalTitle = 'Edit image';
+
+  @property({ type: Boolean, attribute: 'headless' })
+  headless = false;
 
   private _editCanvas: HTMLCanvasElement | null = null;
   private _sourceFile: File | null = null;
@@ -327,15 +330,20 @@ export class PixelPusher extends LitElement {
           @drop=${this._handleDragEvt}
         >
           <slot>
-            <div class="upload-area">
-              ${
-                this.croppedPreviewURL 
-                  ? html`<img class="cropped-preview" src=${this.croppedPreviewURL} alt="Cropped Preview" />`
-                  : html`<div class="cropped-preview-placeholder">
-                      <img class="upload-icon" src=${uploadIcon} alt="Pixel Pusher" />
-                    </div>`
-              }
-            </div>
+            ${
+              !this.headless 
+                ? html`
+                  <div class="upload-area">
+                    ${
+                      this.croppedPreviewURL 
+                        ? html`<img class="cropped-preview" src=${this.croppedPreviewURL} alt="Cropped Preview" />`
+                        : html`<div class="cropped-preview-placeholder">
+                            <img class="upload-icon" src=${uploadIcon} alt="Pixel Pusher" />
+                          </div>`
+                    }
+                  </div>
+                ` : nothing
+            }
           </slot>
         </div>
 
