@@ -44,6 +44,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:demo": "vite build",
     "build:lib": "vite build --config vite.lib.config.ts && vite build --config vite.lib.bundle.config.ts",
     "preview": "vite preview --outDir dist-app",
     "prepublishOnly": "npm run build:lib",
