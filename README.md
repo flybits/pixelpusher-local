@@ -2,6 +2,8 @@
 
 A framework-agnostic `<pixel-pusher>` web component for image file selection with optional aspect-ratio cropping, optional image filters (rotation, brightness, contrast, grayscale, blur), and optimization.
 
+**Live demo:** [https://flybits.github.io/pixelpusher-local/](https://flybits.github.io/pixelpusher-local/)
+
 | File | Use |
 |------|-----|
 | `pixel-pusher.js` | **Default:** smaller build; shared dependencies resolve from `node_modules` after you install the package. |
