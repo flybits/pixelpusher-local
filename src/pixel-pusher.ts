@@ -216,6 +216,18 @@ export class PixelPusher extends LitElement {
     }
   }
 
+  async selectURL(url: string) {
+    const response = await fetch(url);
+    if(!response.ok){
+      throw new Error('Failed to fetch URL');
+    }
+    const blob = await response.blob();
+    const pathname = new URL(url).pathname;
+    const filename = decodeURIComponent(pathname.split('/').pop() || '');
+    const file = new File([blob], filename, { type: blob.type || 'image/jpeg' });
+    this.selectFile(file);
+  }
+
   private _commitEditCanvas() {
     if(this._editCanvas){
       let outputCanvas = this._editCanvas;
