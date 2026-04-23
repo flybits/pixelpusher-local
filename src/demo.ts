@@ -1,4 +1,4 @@
-import './pixel-pusher'
+import '@flybits/pixelpusher/bundle'
 import type { PixelPusher } from './pixel-pusher'
 import sampleImageUrl from './assets/undo.png?url'
 

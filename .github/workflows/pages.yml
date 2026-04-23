@@ -31,7 +31,7 @@ jobs:
           cache: npm
 
       - run: npm ci
-      # Demo static site only (`vite build` → dist-app/). Use `npm run build` when full `tsc` must gate deploy.
+      # `build:demo` runs `build:lib` then bundles the demo against `dist/pixel-pusher.bundle.js`.
       - run: npm run build:demo
 
       - name: Assert demo JS is not tree-shaken (expect Lit + component in bundle)
