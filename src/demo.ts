@@ -1,4 +1,5 @@
-import { PixelPusher } from './pixel-pusher'
+import './pixel-pusher'
+import type { PixelPusher } from './pixel-pusher'
 import sampleImageUrl from './assets/undo.png?url'
 
 function fileLine(file: File): string {

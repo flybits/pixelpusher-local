@@ -39,7 +39,8 @@
   },
   "sideEffects": [
     "./dist/pixel-pusher.js",
-    "./dist/pixel-pusher.bundle.js"
+    "./dist/pixel-pusher.bundle.js",
+    "./src/pixel-pusher.ts"
   ],
   "scripts": {
     "dev": "vite",
