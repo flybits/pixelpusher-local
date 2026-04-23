@@ -1,5 +1,5 @@
 @use '@/_mixins' as *;
-@use '@/_variables' as *;
+@use '@/_variables' as pp;
 
 .toggle-switch{
   @include clickable;
@@ -7,7 +7,7 @@
 
   // Visual state follows aria-checked / this.value — not native :checked alone (avoids label/input desync).
   &[aria-checked="true"] .switch-label {
-    background: $color-action-primary;
+    background: var(--pp-color-action-primary, #{pp.$pp-color-action-primary-default});
     &:after {
       left: calc(100% - 2px);
       transform: translateX(-100%);

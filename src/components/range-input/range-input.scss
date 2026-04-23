@@ -1,5 +1,5 @@
 @use '@/_mixins.scss' as *;
-@use '@/_variables.scss' as *;
+@use '@/_variables.scss' as pp;
 
 .range-input{
   position: relative;
@@ -14,7 +14,7 @@
   .range-value{
     flex: 0 0 auto;
     padding: 10px;
-    color: $color-action-primary;
+    color: var(--pp-color-action-primary, #{pp.$pp-color-action-primary-default});
     width: 30px;
     display: flex;
     align-items: center;
@@ -82,7 +82,7 @@
             height: 20px;
             &:after{
               width: 3px;
-              background-color: $color-action-primary;
+              background-color: var(--pp-color-action-primary, #{pp.$pp-color-action-primary-default});
             }
           }
         }
@@ -95,7 +95,7 @@
       bottom: 0;
       width: 4px;
       transform: translateX(-50%);
-      background-color: $color-action-primary;
+      background-color: var(--pp-color-action-primary, #{pp.$pp-color-action-primary-default});
     }
     &:before,&:after{
       content: '';

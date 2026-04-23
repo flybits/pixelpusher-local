@@ -1,3 +1,4 @@
+@use "./_variables.scss" as *;
 @use "./_functions.scss" as *;
 @use "./_mixins.scss" as *;
 
@@ -17,6 +18,10 @@
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
+
+  @include pp-host-theme-defaults;
+  --pp-color-action-primary: var(--accent, #26a69a);
+
   .upload-area {
     @include clickable;
     width: 100px;
