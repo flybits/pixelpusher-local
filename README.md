@@ -64,6 +64,51 @@ Do **not** load both the default and the bundled script on the same page; the cu
 
 Clicking `<pixel-pusher>` opens an image file picker (`accept: image/*`, single file). After a file is chosen, the pipeline runs: optional **crop** (when **`aspect-ratio` is greater than zero**), optional **filters** (see [Filters](#filters)), then export (resize per `max-width` / `max-height`, encode per `quality`). If **`aspect-ratio` is zero or unset**, the crop modal does not open, but **`file-selected`** still fires and, when processing completes successfully, **`image-edited`** still fires with the loaded image (plus any filters), subject to `max-width` / `max-height` / `quality`.
 
+### Programmatic selection (`selectFile`, `selectURL`)
+
+The element also exposes **`selectFile(file)`** and **`selectURL(url)`** as instance methods. They run the **same** load → optional crop → optional filters → export pipeline as a user-chosen file or a drag-and-drop, including the same rules for `aspect-ratio`, `interactive-filters`, cancellation, and `image-edited` (see [Events](#events)).
+
+**`selectFile(file: File): Promise<void>`**
+
+- If `file` is missing or falsy, the method returns immediately: no **`file-selected`**, no pipeline.
+- Otherwise the component dispatches **`file-selected`** with that `File`, decodes the image, then continues through crop and filters as configured. When the run completes successfully, **`image-edited`** is emitted as usual.
+- If the file cannot be decoded as an image, the error is logged and the method returns without emitting **`image-edited`** for that run.
+
+**`selectURL(url: string): Promise<void>`**
+
+- Performs `fetch(url)`. If the response is not OK (`!response.ok`), the returned promise **rejects** with an error whose message is **`Failed to fetch URL`**.
+- Reads the body as a `Blob`, wraps it in a `File`, and calls **`selectFile`**:
+  - **`type`** — the blob’s MIME type, or **`image/jpeg`** if the blob has no type.
+  - **`name`** — the last segment of the URL’s pathname (URL-decoded), for example `…/foo%20bar.png` → `foo bar.png`. If there is no final segment, the name may be empty.
+- Because this uses **`fetch`**, cross-origin URLs require normal **CORS** access from the browser; same-origin URLs and CORS-enabled CDNs work; arbitrary third-party hotlinks may fail.
+
+**TypeScript** — These methods are part of the typed custom element (see **`HTMLElementTagNameMap['pixel-pusher']`** and the published `./dist/src/pixel-pusher.d.ts`).
+
+**Vanilla examples**
+
+From a separate file input (e.g. hidden) you can forward the chosen file into the component:
+
+```js
+const el = document.querySelector('pixel-pusher');
+document.querySelector('#file-input').addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  if (!file || !el) return;
+  await el.selectFile(file);
+});
+```
+
+Load from a URL (handle network and non-OK responses):
+
+```js
+const el = document.querySelector('pixel-pusher');
+try {
+  await el.selectURL('https://cdn.example.com/assets/photo.png');
+} catch (err) {
+  // e.g. fetch failed or !response.ok ("Failed to fetch URL")
+  console.error(err);
+}
+```
+
 ### Filters
 
 The filter step runs **after** the image is loaded and **after** cropping, if cropping is enabled.
