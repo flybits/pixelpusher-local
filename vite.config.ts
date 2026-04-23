@@ -12,6 +12,8 @@ export default defineConfig(({ command }) => ({
   },
   build: {
     outDir: 'dist-app',
+    // Broader than `es2023` default so GitHub Pages visitors on slightly older browsers still run the demo.
+    target: 'es2022',
   },
   resolve: {
     alias: {

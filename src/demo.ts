@@ -86,11 +86,15 @@ function setupProgrammaticDemo(): void {
   })
 }
 
-setupOutput('demo-default', 'demo-a-events', 'crop')
-setupOutput('demo-slotted', 'demo-b-events', 'crop')
-setupOutput('demo-interactive-filters', 'demo-d-events', 'crop')
-setupOutput('demo-declarative-filters', 'demo-e-events', 'crop')
-setupOutput('demo-quality', 'demo-f-events', 'crop')
-setupOutput('demo-no-crop', 'demo-c-events', 'nocrop')
-setupOutput('demo-programmatic', 'demo-programmatic-events', 'nocrop')
-setupProgrammaticDemo()
+function boot(): void {
+  setupOutput('demo-default', 'demo-a-events', 'crop')
+  setupOutput('demo-slotted', 'demo-b-events', 'crop')
+  setupOutput('demo-interactive-filters', 'demo-d-events', 'crop')
+  setupOutput('demo-declarative-filters', 'demo-e-events', 'crop')
+  setupOutput('demo-quality', 'demo-f-events', 'crop')
+  setupOutput('demo-no-crop', 'demo-c-events', 'nocrop')
+  setupOutput('demo-programmatic', 'demo-programmatic-events', 'nocrop')
+  setupProgrammaticDemo()
+}
+
+void customElements.whenDefined('pixel-pusher').then(boot)

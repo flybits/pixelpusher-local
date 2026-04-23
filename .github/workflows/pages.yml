@@ -34,6 +34,14 @@ jobs:
       # Demo static site only (`vite build` → dist-app/). Use `npm run build` when full `tsc` must gate deploy.
       - run: npm run build:demo
 
+      - name: Assert demo JS is not tree-shaken (expect Lit + component in bundle)
+        run: |
+          set -e
+          main=$(ls dist-app/assets/index-*.js | head -1)
+          size=$(wc -c < "$main")
+          echo "Demo bundle: $main ($size bytes)"
+          test "$size" -gt 15000
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
