@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS } from 'lit'
+import { LitElement, html, nothing, unsafeCSS } from 'lit'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { customElement, property, state } from 'lit/decorators.js'
 import { classMap } from 'lit/directives/class-map.js'
@@ -114,6 +114,9 @@ export class PixelPusher extends LitElement {
   @property({ type: String, attribute: 'filter-modal-title' })
   filterModalTitle = 'Edit image';
 
+  @property({ type: Boolean, attribute: 'headless' })
+  headless = false;
+
   private _editCanvas: HTMLCanvasElement | null = null;
   private _sourceFile: File | null = null;
   
@@ -149,14 +152,14 @@ export class PixelPusher extends LitElement {
   
       const file = files?.[0];
       if (file) {
-        this._selectFile(file);
+        this.selectFile(file);
       }
     } catch(error){
       console.error(error)
     }
   }
 
-  private async _selectFile(file: File) {
+  async selectFile(file: File) {
     console.log('file', file)
     if(file){
       this._sourceFile = file;
@@ -211,6 +214,18 @@ export class PixelPusher extends LitElement {
 
       this._commitEditCanvas();
     }
+  }
+
+  async selectURL(url: string) {
+    const response = await fetch(url);
+    if(!response.ok){
+      throw new Error('Failed to fetch URL');
+    }
+    const blob = await response.blob();
+    const pathname = new URL(url).pathname;
+    const filename = decodeURIComponent(pathname.split('/').pop() || '');
+    const file = new File([blob], filename, { type: blob.type || 'image/jpeg' });
+    this.selectFile(file);
   }
 
   private _commitEditCanvas() {
@@ -280,7 +295,7 @@ export class PixelPusher extends LitElement {
       this._dragOver = false;
       this._dragOverInvalid = false;
       if(selectedFiles?.length > 0 && !hasInvalidFileTypes(selectedFiles)){
-        this._selectFile(selectedFiles[0]);
+        this.selectFile(selectedFiles[0]);
       }
     }
   }
@@ -327,15 +342,20 @@ export class PixelPusher extends LitElement {
           @drop=${this._handleDragEvt}
         >
           <slot>
-            <div class="upload-area">
-              ${
-                this.croppedPreviewURL 
-                  ? html`<img class="cropped-preview" src=${this.croppedPreviewURL} alt="Cropped Preview" />`
-                  : html`<div class="cropped-preview-placeholder">
-                      <img class="upload-icon" src=${uploadIcon} alt="Pixel Pusher" />
-                    </div>`
-              }
-            </div>
+            ${
+              !this.headless 
+                ? html`
+                  <div class="upload-area">
+                    ${
+                      this.croppedPreviewURL 
+                        ? html`<img class="cropped-preview" src=${this.croppedPreviewURL} alt="Cropped Preview" />`
+                        : html`<div class="cropped-preview-placeholder">
+                            <img class="upload-icon" src=${uploadIcon} alt="Pixel Pusher" />
+                          </div>`
+                    }
+                  </div>
+                ` : nothing
+            }
           </slot>
         </div>
 

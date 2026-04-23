@@ -155,12 +155,81 @@ body {
   }
 }
 
+.demo-install-note {
+  margin-top: 1rem;
+}
+
+.demo-programmatic-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.demo-programmatic-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.demo-programmatic-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.demo-programmatic-url-label {
+  flex: 1 0 100%;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--demo-text-h);
+}
+
+.demo-programmatic-url-input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--demo-border);
+  background: var(--demo-code-bg);
+  color: inherit;
+  font-size: 0.8125rem;
+}
+
+.demo-programmatic-btn {
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--demo-border);
+  background: var(--demo-card-bg);
+  color: var(--demo-text-h);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--demo-code-bg);
+  }
+}
+
 .demo-pusher-wrap {
   display: flex;
   align-items: flex-start;
   justify-content: center;
   min-height: 8rem;
   padding: 0.5rem;
+
+  &--programmatic {
+    align-items: stretch;
+    justify-content: flex-start;
+  }
 
   &--filters {
     max-width: 28rem;

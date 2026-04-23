@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pixelpusher — demo (crop, filters, export)</title>
+    <title>pixelpusher — demo (crop, filters, export, programmatic API)</title>
     <link rel="stylesheet" href="./src/demo.scss" />
     <script type="module" src="/src/demo.ts"></script>
   </head>
@@ -16,8 +16,10 @@
           Framework-agnostic <code>&lt;pixel-pusher&gt;</code> web component for image selection,
           optional aspect-ratio cropping, optional filters (interactive or declarative), and export
           with resize and <code>quality</code>. You can pick a file by click or drag-and-drop onto
-          the trigger. Install from npm, or embed the bundled build from a CDN with no build step
-          (see below).
+          the trigger, or drive the same pipeline with <code>selectFile(file)</code> and
+          <code>selectURL(url)</code>. Use <code>headless</code> when you do not want the built-in
+          upload preview UI. Install from npm, or embed the bundled build from a CDN with no build
+          step (see below).
         </p>
       </header>
 
@@ -34,6 +36,10 @@ import '@flybits/pixelpusher/bundle'</code></pre>
         </p>
         <pre class="demo-code"><code>&lt;script type="module" src="https://cdn.jsdelivr.net/npm/@flybits/pixelpusher@1.0.0-rc.1/dist/pixel-pusher.bundle.js"&gt;&lt;/script&gt;
 &lt;pixel-pusher aspect-ratio="1" max-width="1024" max-height="1024"&gt;&lt;/pixel-pusher&gt;</code></pre>
+        <p class="demo-desc demo-install-note">
+          Programmatic <code>selectFile</code> / <code>selectURL</code> and the <code>headless</code>
+          attribute are documented under “Programmatic selection” in the package README.
+        </p>
       </section>
 
       <section class="demo-card" aria-labelledby="demo-a-heading">
@@ -194,6 +200,69 @@ import '@flybits/pixelpusher/bundle'</code></pre>
           </div>
           <pre
             id="demo-c-events"
+            class="demo-events"
+            aria-live="polite"
+            role="status"
+          ></pre>
+        </div>
+      </section>
+
+      <section class="demo-card" aria-labelledby="demo-programmatic-heading">
+        <h2 id="demo-programmatic-heading">Programmatic API + <code>headless</code></h2>
+        <p class="demo-desc">
+          With <code>headless</code>, the default upload preview slot is not shown; your app supplies
+          controls and calls <code>selectFile</code> or <code>selectURL</code> on the element. This
+          instance uses <code>aspect-ratio="0"</code> so there is no crop modal (one click). With
+          <code>aspect-ratio</code> greater than zero, the same methods run the crop step as usual.
+          <strong>Load sample</strong> uses a same-origin image URL from this dev build; other URLs
+          must allow CORS in the browser.
+        </p>
+        <div class="demo-row">
+          <div class="demo-pusher-wrap demo-pusher-wrap--programmatic">
+            <div class="demo-programmatic-stack">
+              <div class="demo-programmatic-controls">
+                <input
+                  id="demo-programmatic-file"
+                  type="file"
+                  accept="image/*"
+                  class="demo-programmatic-file-input"
+                  aria-label="Choose image file"
+                />
+                <button type="button" id="demo-programmatic-file-btn" class="demo-programmatic-btn">
+                  Choose file…
+                </button>
+                <label class="demo-programmatic-url-label" for="demo-programmatic-url"
+                  >Image URL</label
+                >
+                <input
+                  id="demo-programmatic-url"
+                  type="url"
+                  class="demo-programmatic-url-input"
+                  placeholder="https://…"
+                  autocomplete="off"
+                />
+                <button type="button" id="demo-programmatic-url-btn" class="demo-programmatic-btn">
+                  Load URL
+                </button>
+                <button
+                  type="button"
+                  id="demo-programmatic-sample-btn"
+                  class="demo-programmatic-btn"
+                >
+                  Load sample
+                </button>
+              </div>
+              <pixel-pusher
+                id="demo-programmatic"
+                headless
+                aspect-ratio="0"
+                max-width="1024"
+                max-height="1024"
+              ></pixel-pusher>
+            </div>
+          </div>
+          <pre
+            id="demo-programmatic-events"
             class="demo-events"
             aria-live="polite"
             role="status"
