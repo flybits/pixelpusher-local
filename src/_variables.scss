@@ -1,24 +1,44 @@
+// Sass mirrors of default `--pp-*` values: used by `pp-host-theme-defaults` on `pixel-pusher` :host only,
+// and as fallbacks in `var(--pp-*, …)` where nested components may run without those tokens set.
+// Nested `modal-window`, `range-input`, and `toggle-switch` inherit `--pp-*` from `<pixel-pusher>` (no :host reset).
+// On `pixel-pusher` only, `pixel-pusher.scss` sets `--pp-color-action-primary` to follow `--accent` after the mixin.
 
-$modal-inner-padding: 40px;
+$pp-color-text-primary-default: #131523;
+$pp-color-text-heading-default: #414042;
+$pp-color-text-label-default: #505a72;
+$pp-color-text-description-default: #5a607f;
+$pp-color-text-muted-default: #939598;
+$pp-color-text-placeholder-default: #a1a7c4;
+$pp-color-text-caption-default: #666666;
+$pp-color-text-on-primary-default: #ffffff;
+$pp-color-overlay-scrim-default: rgb(0 0 0 / 0.5);
+$pp-color-action-primary-default: #26a69a;
+$pp-color-action-primary-hover-default: #23988f;
+$pp-color-action-ghost-hover-default: #1f877f;
+$pp-color-action-secondary-default: #d7dbec;
+$pp-color-action-secondary-hover-default: #f9fbfd;
+$pp-modal-inner-padding-default: 40px;
+$pp-font-size-body-default: 16px;
+$pp-font-size-modal-title-default: 24px;
+$pp-font-weight-semibold-default: 600;
 
-
-$font-size-body: 16px;
-$font-size-modal-title: 24px;
-
-$font-weight-semibold: 600;
-
-$color-text-primary: #131523;
-$color-text-heading: #414042;
-$color-text-label: #505a72;
-$color-text-description: #5a607f;
-$color-text-muted: #939598;
-$color-text-placeholder: #a1a7c4;
-$color-text-caption: #666666;
-$color-text-on-primary: #ffffff;
-$color-overlay-scrim: rgb(0 0 0 / 0.5);
-
-$color-action-primary: #26a69a;
-$color-action-primary-hover: #23988f;
-$color-action-ghost-hover: #1f877f;
-$color-action-secondary: #d7dbec;
-$color-action-secondary-hover: #f9fbfd;
+@mixin pp-host-theme-defaults {
+  --pp-color-text-primary: #{$pp-color-text-primary-default};
+  --pp-color-text-heading: #{$pp-color-text-heading-default};
+  --pp-color-text-label: #{$pp-color-text-label-default};
+  --pp-color-text-description: #{$pp-color-text-description-default};
+  --pp-color-text-muted: #{$pp-color-text-muted-default};
+  --pp-color-text-placeholder: #{$pp-color-text-placeholder-default};
+  --pp-color-text-caption: #{$pp-color-text-caption-default};
+  --pp-color-text-on-primary: #{$pp-color-text-on-primary-default};
+  --pp-color-overlay-scrim: #{$pp-color-overlay-scrim-default};
+  --pp-color-action-primary: #{$pp-color-action-primary-default};
+  --pp-color-action-primary-hover: #{$pp-color-action-primary-hover-default};
+  --pp-color-action-ghost-hover: #{$pp-color-action-ghost-hover-default};
+  --pp-color-action-secondary: #{$pp-color-action-secondary-default};
+  --pp-color-action-secondary-hover: #{$pp-color-action-secondary-hover-default};
+  --pp-modal-inner-padding: #{$pp-modal-inner-padding-default};
+  --pp-font-size-body: #{$pp-font-size-body-default};
+  --pp-font-size-modal-title: #{$pp-font-size-modal-title-default};
+  --pp-font-weight-semibold: #{$pp-font-weight-semibold-default};
+}

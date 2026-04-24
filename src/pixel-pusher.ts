@@ -35,6 +35,8 @@ const hasInvalidFileTypes = (files: File[]) => {
  * `aspectRatio` is set, the crop modal opens before emitting the result.
  *
  * @slot - Optional light DOM for the clickable area. Without slotted children, a default upload and preview UI is used. Mark elements with `data-pp-preview` to receive the cropped image preview.
+ *
+ * **Theming (shadow DOM):** default `--pp-*` tokens are set on `:host` via `pp-host-theme-defaults` in `_variables.scss` (on `pixel-pusher` only); override them from the light DOM on `pixel-pusher` (or an ancestor). Nested internal components inherit those tokens (they do not re-declare them on `:host`); `var(--pp-*, fallback)` in their styles matches the same defaults when used standalone. Picker chrome uses `--text`, `--text-h`, `--accent`, etc. On `pixel-pusher` only, `--pp-color-action-primary` follows `--accent` (`var(--accent, #26a69a)`). Token names: `--pp-color-text-primary`, `--pp-color-text-heading`, `--pp-color-text-label`, `--pp-color-text-description`, `--pp-color-text-muted`, `--pp-color-text-placeholder`, `--pp-color-text-caption`, `--pp-color-text-on-primary`, `--pp-color-overlay-scrim`, `--pp-color-action-primary`, `--pp-color-action-primary-hover`, `--pp-color-action-ghost-hover`, `--pp-color-action-secondary`, `--pp-color-action-secondary-hover`, `--pp-modal-inner-padding`, `--pp-font-size-body`, `--pp-font-size-modal-title`, `--pp-font-weight-semibold`.
  */
 @customElement('pixel-pusher')
 export class PixelPusher extends LitElement {

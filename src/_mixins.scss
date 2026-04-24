@@ -1,4 +1,4 @@
-@use '@/_variables' as *;
+@use './_variables.scss' as pp;
 
 @mixin no-scrollbar{
   scrollbar-width: none;
@@ -36,31 +36,31 @@
   text-align: center;
 
   &.primary {
-    background-color: $color-action-primary;
-    color: #FFFFFF;
-    border-color: $color-action-primary;
+    background-color: var(--pp-color-action-primary, #{pp.$pp-color-action-primary-default});
+    color: var(--pp-color-text-on-primary, #{pp.$pp-color-text-on-primary-default});
+    border-color: var(--pp-color-action-primary, #{pp.$pp-color-action-primary-default});
 
     &:hover:not(:disabled):not(.disabled) {
-      background-color: $color-action-primary-hover;
+      background-color: var(--pp-color-action-primary-hover, #{pp.$pp-color-action-primary-hover-default});
     }
   }
 
   &.secondary {
-    background-color: $color-action-secondary;
-    border-color: $color-action-secondary;
-    color: $color-action-primary;
+    background-color: var(--pp-color-action-secondary, #{pp.$pp-color-action-secondary-default});
+    border-color: var(--pp-color-action-secondary, #{pp.$pp-color-action-secondary-default});
+    color: var(--pp-color-action-primary, #{pp.$pp-color-action-primary-default});
 
     &:hover:not(:disabled):not(.disabled) {
-      background-color: $color-action-secondary-hover;
+      background-color: var(--pp-color-action-secondary-hover, #{pp.$pp-color-action-secondary-hover-default});
     }
   }
 
   &.ghost {
     background-color: transparent;
-    color: $color-action-primary;
+    color: var(--pp-color-action-primary, #{pp.$pp-color-action-primary-default});
 
     &:hover:not(:disabled):not(.disabled) {
-      color: $color-action-primary-hover;
+      color: var(--pp-color-action-primary-hover, #{pp.$pp-color-action-primary-hover-default});
     }
   }
 

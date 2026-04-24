@@ -1,5 +1,5 @@
 @use '@/_mixins.scss' as *;
-@use '@/_variables.scss' as *;
+@use '@/_variables.scss' as pp;
 
 :host{
   display: block;
@@ -24,7 +24,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: var(--pp-color-overlay-scrim, #{pp.$pp-color-overlay-scrim-default});
       transition: background-color 0.2s ease-in-out;
     }
     .modal-content {
@@ -47,19 +47,19 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: $modal-inner-padding;
-        padding-bottom: calc($modal-inner-padding / 2);
+        padding: var(--pp-modal-inner-padding, #{pp.$pp-modal-inner-padding-default});
+        padding-bottom: calc(var(--pp-modal-inner-padding, #{pp.$pp-modal-inner-padding-default}) / 2);
         .header-title {
-          font-size: $font-size-modal-title;
-          font-weight: $font-weight-semibold;
-          color: $color-text-heading;
+          font-size: var(--pp-font-size-modal-title, #{pp.$pp-font-size-modal-title-default});
+          font-weight: var(--pp-font-weight-semibold, #{pp.$pp-font-weight-semibold-default});
+          color: var(--pp-color-text-heading, #{pp.$pp-color-text-heading-default});
         }
         .close-btn {
           all: unset;
           @include clickable;
-          font-size: $font-size-body;
-          font-weight: $font-weight-semibold;
-          color: $color-text-muted;
+          font-size: var(--pp-font-size-body, #{pp.$pp-font-size-body-default});
+          font-weight: var(--pp-font-weight-semibold, #{pp.$pp-font-weight-semibold-default});
+          color: var(--pp-color-text-muted, #{pp.$pp-color-text-muted-default});
           .close-icon{
             vertical-align: middle;
           }
@@ -86,7 +86,7 @@
     }
     &.open {
       .modal-overlay {
-        background-color: $color-overlay-scrim;
+        background-color: var(--pp-color-overlay-scrim, #{pp.$pp-color-overlay-scrim-default});
       }
       .modal-content {
         opacity: 1;
