@@ -62,6 +62,82 @@ To pick up a newer release, replace `1.0.0-rc.1` in the URL or use a jsDelivr ra
 
 Do **not** load both the default and the bundled script on the same page; the custom element would be defined twice.
 
+## Theming
+
+The component uses **CSS custom properties** on `<pixel-pusher>` (or inherited from an **ancestor**). Internal shadow DOM styles read those tokens with `var(--pp-*, …)` (and a few host-only tokens such as `--accent`), so you can theme modals, buttons, sliders, and the default upload control without `::part` selectors.
+
+### How to override
+
+Set variables on the element or any parent:
+
+```html
+<pixel-pusher style="--accent: #0066cc;" aspect-ratio="1" max-width="1024" max-height="1024"></pixel-pusher>
+```
+
+```css
+pixel-pusher.brand {
+  --pp-modal-inner-padding: 24px;
+}
+```
+
+Defaults are defined in Sass and emitted on the component host; for exact default colors and sizes, see [`src/_variables.scss`](src/_variables.scss) (`pp-host-theme-defaults` and `$pp-*-default`).
+
+### `--accent` and `--pp-color-action-primary`
+
+On the host, `--pp-color-action-primary` is set to `var(--accent, #26a69a)` after the default `--pp-*` map. That means:
+
+- Changing **`--accent`** retints the built-in circular upload control (via `--accent-bg` / `--accent-border`) and, unless you override it separately, **primary actions** (modal buttons, range input, toggle) because they resolve `--pp-color-action-primary`.
+- Setting **`--pp-color-action-primary`** directly on `<pixel-pusher>` overrides that alias for all uses of the primary action token (buttons, sliders, toggle).
+
+### `--pp-*` tokens
+
+These are declared on `<pixel-pusher>` via `pp-host-theme-defaults` in [`src/_variables.scss`](src/_variables.scss). Nested internals inherit them; each row notes where the **current** bundled styles reference the token.
+
+| Token | Purpose | Current usage in this repo |
+|-------|---------|------------------------------|
+| `--pp-color-text-primary` | Default body / primary text | Declared on host; not referenced in bundled component SCSS yet |
+| `--pp-color-text-heading` | Modal / section titles | Modal header title ([`src/components/modal-window/modal-window.scss`](src/components/modal-window/modal-window.scss)) |
+| `--pp-color-text-label` | Form and control labels | Declared; not referenced yet |
+| `--pp-color-text-description` | Supporting descriptions | Declared; not referenced yet |
+| `--pp-color-text-muted` | De-emphasized text | Modal close control ([`src/components/modal-window/modal-window.scss`](src/components/modal-window/modal-window.scss)) |
+| `--pp-color-text-placeholder` | Placeholder text | Declared; not referenced yet |
+| `--pp-color-text-caption` | Captions / fine print | Declared; not referenced yet |
+| `--pp-color-text-on-primary` | Text on primary-filled controls | Primary `flb-btn` ([`src/_mixins.scss`](src/_mixins.scss)) |
+| `--pp-color-overlay-scrim` | Modal backdrop | Modal overlay ([`src/components/modal-window/modal-window.scss`](src/components/modal-window/modal-window.scss)) |
+| `--pp-color-action-primary` | Primary actions, range/toggle accents | `flb-btn` primary and ghost label color; range input; toggle “on” ([`src/_mixins.scss`](src/_mixins.scss), [`src/components/range-input/range-input.scss`](src/components/range-input/range-input.scss), [`src/components/toggle-switch/toggle-switch.scss`](src/components/toggle-switch/toggle-switch.scss)); host default follows `--accent` ([`src/pixel-pusher.scss`](src/pixel-pusher.scss)) |
+| `--pp-color-action-primary-hover` | Primary control hover | `flb-btn` primary hover and ghost hover text ([`src/_mixins.scss`](src/_mixins.scss)) |
+| `--pp-color-action-ghost-hover` | Intended ghost-button hover emphasis | Declared on host; ghost hover in [`src/_mixins.scss`](src/_mixins.scss) currently uses `--pp-color-action-primary-hover`, not this token |
+| `--pp-color-action-secondary` | Secondary button surface and border | `flb-btn` secondary ([`src/_mixins.scss`](src/_mixins.scss)) |
+| `--pp-color-action-secondary-hover` | Secondary button hover | `flb-btn` secondary hover ([`src/_mixins.scss`](src/_mixins.scss)) |
+| `--pp-modal-inner-padding` | Modal header horizontal padding; header bottom padding is half this value | Modal header ([`src/components/modal-window/modal-window.scss`](src/components/modal-window/modal-window.scss)) |
+| `--pp-font-size-body` | Base UI font size | Modal close control ([`src/components/modal-window/modal-window.scss`](src/components/modal-window/modal-window.scss)) |
+| `--pp-font-size-modal-title` | Modal title size | Modal header title ([`src/components/modal-window/modal-window.scss`](src/components/modal-window/modal-window.scss)) |
+| `--pp-font-weight-semibold` | Semibold for titles and controls | Modal title and close ([`src/components/modal-window/modal-window.scss`](src/components/modal-window/modal-window.scss)) |
+
+Tokens that are only declared today are still part of the public surface: you can set them for **slotted** light DOM content (`color: var(--pp-color-text-primary)` on children of `<pixel-pusher>`), for future UI, or to align with your design system. Their defaults mirror the Sass `$pp-*-default` values in [`src/_variables.scss`](src/_variables.scss).
+
+### Additional variables on `<pixel-pusher>` (not `--pp-*`)
+
+Besides the `--pp-*` tokens, [`src/pixel-pusher.scss`](src/pixel-pusher.scss) declares more custom properties on `:host`. **Chrome** means the component’s surrounding UI (for example the default circular upload control), not the crop/filter/export pipeline. That upload control mainly uses **`--accent`**, **`--accent-bg`**, and **`--accent-border`**. The table below lists the rest; you can use them in slotted content or your own CSS even when bundled styles do not reference every token with `var()`:
+
+| Token | Role |
+|-------|------|
+| `--accent` | Brand accent; drives primary action color via `--pp-color-action-primary` unless overridden |
+| `--accent-bg` | Upload control fill |
+| `--accent-border` | Upload control border |
+| `--text` | General body text (host-level convention) |
+| `--text-h` | Emphasized / heading text |
+| `--bg` | Surface background |
+| `--border` | Default border color |
+| `--code-bg` | Code-style surfaces |
+| `--social-bg` | Muted panel / social strip background |
+| `--shadow` | Box shadow recipe |
+| `--sans` | Sans-serif stack |
+| `--heading` | Heading font stack |
+| `--mono` | Monospace stack |
+
+The same host block is adjusted under **`@media (prefers-color-scheme: dark)`** in [`src/pixel-pusher.scss`](src/pixel-pusher.scss) (for example darker `--bg`, lighter `--text-h`, and a different `--accent`).
+
 ## API
 
 Clicking `<pixel-pusher>` opens an image file picker (`accept: image/*`, single file). After a file is chosen, the pipeline runs: optional **crop** (when **`aspect-ratio` is greater than zero**), optional **filters** (see [Filters](#filters)), then export (resize per `max-width` / `max-height`, encode per `quality`). If **`aspect-ratio` is zero or unset**, the crop modal does not open, but **`file-selected`** still fires and, when processing completes successfully, **`image-edited`** still fires with the loaded image (plus any filters), subject to `max-width` / `max-height` / `quality`.
