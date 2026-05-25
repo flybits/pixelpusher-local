@@ -23,7 +23,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
           package-manager-cache: false
       - run: npm ci
-      - run: npm run build
+      - run: npm run build:lib
       - run: |
           VERSION=$(node -p "require('./package.json').version")
           if [[ "$VERSION" == *-* ]]; then
