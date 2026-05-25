@@ -15,6 +15,12 @@ export class ModalWindow extends LitElement {
   @state()
   private isOpen = false
 
+  @state()
+  private _isRendered = false;
+
+  @state()
+  private _isClosing = false;
+  
   @property({ type: String })
   title = ''
 
@@ -33,13 +39,18 @@ export class ModalWindow extends LitElement {
   }
   
   open() {
-    this.modalWindowRef.value?.showModal()
-    this.isOpen = true
+    this.modalWindowRef.value?.showModal();
+    this._isRendered = true;
+    this._isClosing = false;
+    this.isOpen = true;
   }
 
   close() {
     this.isOpen = false
+    this._isClosing = true;
     setTimeout(() => {
+      this._isRendered = false;
+      this._isClosing = false;
       this.modalWindowRef.value?.close()
       this._emitEvt('modal-close')
     }, 200)
@@ -58,31 +69,35 @@ export class ModalWindow extends LitElement {
       <dialog 
         class=${classMap({
           'modal-dialog': true,
-          'open': this.isOpen
+          'open': this.isOpen,
+          'closing': this._isClosing
         })} 
         ${ref(this.modalWindowRef)}
         @close=${this._onDialogClose}
         @cancel.capture=${this._onDialogCancel}
       >
         <div class="modal-overlay"></div>
-        <div class="modal-content">
-          <div class="modal-header">
-            <slot name="header">
-              <div class="header-title">${this.title}</div>
-            </slot>
-            ${this.dismissible ? html`  
-              <button class="close-btn" @click=${this.close}>
-                <img src=${closeIcon} alt="Close" class="close-icon" />
-              </button>
-            ` : nothing }
+        ${this._isRendered ? html`
+          <div class="modal-content">
+            <div class="modal-header">
+              <slot name="header">
+                <div class="header-title">${this.title}</div>
+              </slot>
+              ${this.dismissible ? html`  
+                <button class="close-btn" @click=${this.close}>
+                  <img src=${closeIcon} alt="Close" class="close-icon" />
+                </button>
+              ` : nothing }
+            </div>
+            <div class="modal-body">
+              <slot />
+            </div>
+            <div class="modal-footer">
+              <slot name="footer" />
+            </div>
           </div>
-          <div class="modal-body">
-            <slot />
-          </div>
-          <div class="modal-footer">
-            <slot name="footer" />
-          </div>
-        </div>
+          ` : nothing 
+        }
       </dialog>
     `
   }
