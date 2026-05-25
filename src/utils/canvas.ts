@@ -20,7 +20,7 @@ export const cloneCanvas = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
   outputCanvas.width = canvas.width;
   outputCanvas.height = canvas.height;
   const ctx = outputCanvas.getContext('2d');
-  if (!ctx) return;
+  if (!ctx) throw new Error('Could not get 2d context for cloneCanvas');
   ctx.drawImage(canvas, 0, 0);
   return outputCanvas;
 }
@@ -49,8 +49,8 @@ export const canvasFromFile = async (file: File): Promise<HTMLCanvasElement> => 
   const deferred = new Deferred<HTMLCanvasElement>();
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  if (!ctx) return;
-  
+  if (!ctx) throw new Error('Could not get 2d context for canvasFromFile');
+
   const img = new Image();
   img.src = URL.createObjectURL(file);
   img.onload = () => {

@@ -95,7 +95,7 @@ export class PixelPusher extends LitElement {
    * Quality of the image in decimal format (0.0 to 1.0)
    */
   @property({ type: Number, attribute: 'quality' })
-  quality;
+  quality: number | undefined = undefined;
 
   /**
    * Whether to show interactive filters
@@ -188,22 +188,24 @@ export class PixelPusher extends LitElement {
 
       // apply filters
       if(this.hasFilterConfigs || this.interactiveFilters){
+        const fw = this.filterWindowRef.value;
+        const editCanvas = this._editCanvas;
+        if (!fw || !editCanvas) {
+          return;
+        }
         const deferredFilter = new Deferred<HTMLCanvasElement>();
-        const filterFn = this.interactiveFilters 
-          ? this.filterWindowRef.value?.open 
-          : this.filterWindowRef.value?.applyFilters;
-        filterFn.call(
-          this.filterWindowRef.value, 
-          this._editCanvas, 
-          {
-            blur: this.blurPx,
-            grayscale: this.grayscale,
-            rotate: this.rotateDeg,
-            brightness: this.brightness,
-            contrast: this.contrast,
-          },
-          deferredFilter
-        );
+        const filterOpts = {
+          blur: this.blurPx,
+          grayscale: this.grayscale,
+          rotate: this.rotateDeg,
+          brightness: this.brightness,
+          contrast: this.contrast,
+        };
+        if (this.interactiveFilters) {
+          fw.open(editCanvas, filterOpts, deferredFilter);
+        } else {
+          fw.applyFilters(editCanvas, filterOpts, deferredFilter);
+        }
 
         try{
           this._editCanvas = await deferredFilter.promise;
@@ -230,28 +232,36 @@ export class PixelPusher extends LitElement {
   }
 
   private _commitEditCanvas() {
-    if(this._editCanvas){
-      let outputCanvas = this._editCanvas;
-      if(this.maxWidth > 0 || this.maxHeight > 0){
-        outputCanvas = resizeCanvas(
-          this._editCanvas,
-          this.maxWidth ?? 0,
-          this.maxHeight ?? 0
-        )
-      }
+    const editCanvas = this._editCanvas;
+    const sourceFile = this._sourceFile;
+    if (!editCanvas || !sourceFile) {
+      return;
+    }
 
-      const quality = this.quality || 1;
-      let resolvedType = this._sourceFile.type;
-      let resolvedName = this._sourceFile.name;
-      if(
-        (this.quality && this._sourceFile.type !== 'image/jpeg') ||
-        this._sourceFile.type === 'image/svg+xml'
-      ){
-        resolvedType = 'image/webp';
-        resolvedName = applyFileExtension(this._sourceFile.name, resolvedType);
+    let outputCanvas: HTMLCanvasElement = editCanvas;
+    if(this.maxWidth > 0 || this.maxHeight > 0){
+      const resized = resizeCanvas(
+        editCanvas,
+        this.maxWidth ?? 0,
+        this.maxHeight ?? 0
+      );
+      if (resized) {
+        outputCanvas = resized;
       }
+    }
 
-      outputCanvas.toBlob(
+    const quality = this.quality || 1;
+    let resolvedType = sourceFile.type;
+    let resolvedName = sourceFile.name;
+    if(
+      (this.quality && sourceFile.type !== 'image/jpeg') ||
+      sourceFile.type === 'image/svg+xml'
+    ){
+      resolvedType = 'image/webp';
+      resolvedName = applyFileExtension(sourceFile.name, resolvedType);
+    }
+
+    outputCanvas.toBlob(
         (blob) => {
           if (!blob) return
 
@@ -266,7 +276,6 @@ export class PixelPusher extends LitElement {
         resolvedType,
         quality
       )
-    }
   }
 
   private _handleDragEvt(event: DragEvent) {

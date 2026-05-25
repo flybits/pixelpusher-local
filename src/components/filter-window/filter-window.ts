@@ -16,9 +16,11 @@ import brightnessIcon from '@/assets/brightness.png'
 import contrastIcon from '@/assets/contrast.png'
 import blurIcon from '@/assets/blur.png'
 import grayscaleIcon from '@/assets/grayscale.png'
-import imgQualityIcon from '@/assets/img-quality.png'
 
-export type FilteredImageEvent = CustomEvent<{ canvas: HTMLCanvasElement }>
+export type FilteredImageEvent = CustomEvent<{
+  canvas: HTMLCanvasElement
+  skipEffects?: boolean
+}>
 export type ImageFilteredCancelledEvent = CustomEvent<void>
 
 export type FilterOptions = {
@@ -87,7 +89,10 @@ export class FilterWindow extends LitElement {
       opts.contrast = filterOptions.contrast / 50;
     }
 
-    this._previewCanvas = applyRasterTransforms(this._editCanvas, opts);
+    const edit = this._editCanvas;
+    if (!edit) return;
+    const transformed = applyRasterTransforms(edit, opts);
+    this._previewCanvas = transformed ?? null;
 
     if(!this._interactiveMode) {
       this.commitFilters();
@@ -95,16 +100,28 @@ export class FilterWindow extends LitElement {
   }
 
   commitFilters() {
-    this._deferredReq?.resolve(this._previewCanvas);
-    this._emitEvt('image-filtered', { canvas: this._previewCanvas });
+    const preview = this._previewCanvas;
+    const deferred = this._deferredReq;
+    if (!preview || !deferred) {
+      this.close();
+      return;
+    }
+    deferred.resolve(preview);
+    this._emitEvt('image-filtered', { canvas: preview });
     this.close();
   }
 
   skipEffects() {
-    this._deferredReq?.resolve(this._editCanvas);
-    this._emitEvt('image-filtered', { 
+    const edit = this._editCanvas;
+    const deferred = this._deferredReq;
+    if (!edit || !deferred) {
+      this.close();
+      return;
+    }
+    deferred.resolve(edit);
+    this._emitEvt('image-filtered', {
       skipEffects: true,
-      canvas: this._editCanvas 
+      canvas: edit,
     });
     this.close();
   }
@@ -149,6 +166,41 @@ export class FilterWindow extends LitElement {
     return this._selectedAction === action;
   }
 
+  private _onBrightnessChange(event: CustomEvent<{ value: number }>) {
+    const opts = this._filterOptions;
+    if (!opts) return;
+    opts.brightness = event.detail.value;
+    this.updatePreview(opts);
+  }
+
+  private _onContrastChange(event: CustomEvent<{ value: number }>) {
+    const opts = this._filterOptions;
+    if (!opts) return;
+    opts.contrast = event.detail.value;
+    this.updatePreview(opts);
+  }
+
+  private _onBlurChange(event: CustomEvent<{ value: number }>) {
+    const opts = this._filterOptions;
+    if (!opts) return;
+    opts.blur = event.detail.value;
+    this.updatePreview(opts);
+  }
+
+  private _onGrayscaleChange(event: CustomEvent<{ value: boolean }>) {
+    const opts = this._filterOptions;
+    if (!opts) return;
+    opts.grayscale = event.detail.value;
+    this.updatePreview(opts);
+  }
+
+  private _onRotateInput(event: Event) {
+    const opts = this._filterOptions;
+    if (!opts) return;
+    opts.rotate = (event.target as HTMLInputElement).valueAsNumber;
+    this.updatePreview(opts);
+  }
+
   render() {
     return html`
       <modal-window 
@@ -168,7 +220,7 @@ export class FilterWindow extends LitElement {
                     value=${this._filterOptions?.brightness ?? 0}
                     min=${0}
                     max=${100}
-                    @range-value-update=${(event: CustomEvent<{ value: number }>) => {this._filterOptions.brightness = event.detail.value; this.updatePreview(this._filterOptions)}}
+                    @range-value-update=${this._onBrightnessChange}
                   ></range-input>
                 ` : nothing
               }
@@ -178,7 +230,7 @@ export class FilterWindow extends LitElement {
                     value=${this._filterOptions?.contrast ?? 0}
                     min=${0}
                     max=${100}
-                    @range-value-update=${(event: CustomEvent<{ value: number }>) => {this._filterOptions.contrast = event.detail.value; this.updatePreview(this._filterOptions)}}
+                    @range-value-update=${this._onContrastChange}
                   ></range-input>
                 ` : nothing
               }
@@ -188,7 +240,7 @@ export class FilterWindow extends LitElement {
                     value=${this._filterOptions?.blur ?? 0}
                     min=${0}
                     max=${100}
-                    @range-value-update=${(event: CustomEvent<{ value: number }>) => {this._filterOptions.blur = event.detail.value; this.updatePreview(this._filterOptions)}}
+                    @range-value-update=${this._onBlurChange}
                   ></range-input>
                 ` : nothing
               }
@@ -196,7 +248,7 @@ export class FilterWindow extends LitElement {
                 this._selectedAction === 'grayscale' ? html`
                   <toggle-switch
                     value=${this._filterOptions?.grayscale ?? false}
-                    @toggle-switch-changed=${(event: CustomEvent<{ value: boolean }>) => {this._filterOptions.grayscale = event.detail.value; this.updatePreview(this._filterOptions)}}
+                    @toggle-switch-changed=${this._onGrayscaleChange}
                   ></toggle-switch>
                 ` : nothing
               }
@@ -206,7 +258,7 @@ export class FilterWindow extends LitElement {
                     type="range" 
                     class="rotate-input" 
                     value=${this._filterOptions?.rotate ?? 0} 
-                    @input=${(event: Event) => {this._filterOptions.rotate = (event.target as HTMLInputElement).valueAsNumber; this.updatePreview(this._filterOptions)}} 
+                    @input=${this._onRotateInput} 
                     min=${0}
                     max=${360}
                     step=${90}

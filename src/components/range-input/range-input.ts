@@ -95,9 +95,10 @@ export class RangeInput extends LitElement {
     event.stopPropagation();
     if (this._isDragging) {
       const deltaX = event.clientX - this._dragStartX;
-      if(this.rangeSliderTrackRef.value){
+      const track = this.rangeSliderTrackRef.value;
+      if (track) {
         requestAnimationFrame(() => {
-          this.rangeSliderTrackRef.value.scrollLeft -= deltaX;
+          track.scrollLeft -= deltaX;
           this._dragStartX = event.clientX;
           this._onInput();
         })
