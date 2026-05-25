@@ -235,6 +235,7 @@ export function PixelPusherField() {
       aspectRatio={1}
       maxWidth={1024}
       maxHeight={1024}
+      onChange={(data) => {usered}}
     />
   );
 }
