@@ -148,13 +148,13 @@ export class RangeInput extends LitElement {
             'range-slider': true, 
             'is-dragging': this._isDragging 
           })}
+          @pointerdown=${this._onPointerDown}
+          @pointermove=${this._onPointerMove}
+          @pointerup=${this._onPointerUp}
+          @pointercancel=${this._onPointerUp}
         >
           <div class="slider-track"
             ${ref(this.rangeSliderTrackRef)}
-            @pointerdown=${this._onPointerDown}
-            @pointermove=${this._onPointerMove}
-            @pointerup=${this._onPointerUp}
-            @pointercancel=${this._onPointerUp}
           >
             <div 
               class="range-slider-content"
