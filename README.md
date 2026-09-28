@@ -47,7 +47,7 @@ Types for both point at `./dist/src/pixel-pusher.d.ts`.
 
 **Default, interactive usage:** You only need the custom element in the page (after importing the package). The user picks an image by **clicking or focusing** the control, which opens the browser’s single-file picker (`accept: image/*`), or by **dropping** a valid image file onto it. Crop, filters, and export limits are controlled with **HTML attributes**; you listen for **`file-selected`** and **`image-edited`** if you need the `File` or the processed result. No imperative JavaScript is required for that path.
 
-**Processing pipeline** (picker, drop, or programmatic methods below): decode → optional **crop** if `aspect-ratio` > 0 → optional **filters** → export (resize via `max-width` / `max-height`, encode via `quality`). If `aspect-ratio` is omitted or `0`, the crop step is skipped; `file-selected` still fires, and on success **`image-edited`** still fires with filters/export as configured.
+**Processing pipeline** (picker, drop, or programmatic methods below): decode → optional **crop** if `aspect-ratio` > 0 (export size from `crop-export-mode`, default **source** resolution for the crop region) → optional **filters** → export (resize via `max-width` / `max-height`, encode via `quality`). If `aspect-ratio` is omitted or `0`, the crop step is skipped; `file-selected` still fires, and on success **`image-edited`** still fires with filters/export as configured.
 
 ## Optional programmatic API (`selectFile` / `selectURL`)
 
@@ -92,6 +92,7 @@ Use `filter-modal-title` for the modal title (default **`Edit image`**).
 | HTML attribute | Property | Notes |
 |----------------|----------|-------|
 | `aspect-ratio` | `aspectRatio` | Width ÷ height; `> 0` enables crop |
+| `crop-export-mode` | `cropExportMode` | `source` (default) = cropped canvas at natural resolution for the selection; `selection` = layout pixels in the crop modal (legacy) |
 | `max-width` | `maxWidth` | Export max width (px); downscale only |
 | `max-height` | `maxHeight` | Export max height (px); downscale only |
 | `quality` | `quality` | Optional; typical range `0`–`1` (higher ≈ larger/sharper). See **Export format**. |

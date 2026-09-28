@@ -6,11 +6,16 @@ import Cropper from 'cropperjs'
 import Deferred from '@/models/deferred.ts';
 import elementStyles from './cropper-window.scss?inline'
 import { ModalWindow } from '@/components/modal-window/modal-window.ts'
+import {
+  resolveCropExportWidth,
+  type CropExportMode,
+} from '@/utils/cropExportSize.ts'
 
 export type CroppedImageEvent = CustomEvent<{ canvas: HTMLCanvasElement }>
 
 export type CropOptions = {
   aspectRatio: number
+  cropExportMode?: CropExportMode
 }
 
 @customElement('cropper-window')
@@ -98,7 +103,15 @@ export class CropperWindow extends LitElement {
     if (!sourceFile) return
 
     try{
-      let canvas = await selection.$toCanvas()
+      const cropperImage = this.cropper.getCropperImage()
+      const exportWidth = await resolveCropExportWidth(
+        selection,
+        cropperImage,
+        this.cropOpts?.cropExportMode ?? 'source',
+      )
+      const canvas = exportWidth
+        ? await selection.$toCanvas({ width: exportWidth })
+        : await selection.$toCanvas()
       if(this._deferredReq){
         this._deferredReq.resolve(canvas);
       }

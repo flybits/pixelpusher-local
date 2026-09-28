@@ -50,6 +50,13 @@ export class PixelPusher extends LitElement {
   aspectRatio = 0;
 
   /**
+   * Cropped canvas export sizing: `source` uses natural resolution for the
+   * selected region; `selection` uses the crop box layout pixels (legacy).
+   */
+  @property({ type: String, attribute: 'crop-export-mode' })
+  cropExportMode: 'source' | 'selection' = 'source';
+
+  /**
    * Blur amount in pixels
    */
   @property({ type: Number, attribute: 'blur' })
@@ -176,6 +183,7 @@ export class PixelPusher extends LitElement {
         const deferredCrop = new Deferred<HTMLCanvasElement>();
         this.cropperWindowRef.value?.open(file, {
           aspectRatio: this.aspectRatio,
+          cropExportMode: this.cropExportMode,
         }, deferredCrop);
 
         try{
