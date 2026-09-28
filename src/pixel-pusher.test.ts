@@ -26,6 +26,7 @@ vi.mock('./utils/canvas', async (importOriginal) => {
 
 import './pixel-pusher.ts'
 import type { PixelPusher } from './pixel-pusher.ts'
+import type { CropperWindow } from './components/cropper-window/cropper-window.ts'
 
 /** Minimal valid PNG bytes (e.g. mock `fetch` response body for `selectURL`). */
 function createPngFile(name: string): File {
@@ -66,14 +67,61 @@ describe('pixel-pusher', () => {
     expect(el.interactiveFilters).toBe(false)
   })
 
-  it('reflects filter-related attributes', async () => {
-    render(html`<pixel-pusher blur="2" rotate="90" grayscale></pixel-pusher>`, container)
-    const el = container.querySelector('pixel-pusher') as PixelPusher
-    await el.updateComplete
-    expect(el.blurPx).toBe(2)
-    expect(el.rotateDeg).toBe(90)
-    expect(el.grayscale).toBe(true)
-  })
+    it('reflects filter-related attributes', async () => {
+      render(html`<pixel-pusher blur="2" rotate="90" grayscale></pixel-pusher>`, container)
+      const el = container.querySelector('pixel-pusher') as PixelPusher
+      await el.updateComplete
+      expect(el.blurPx).toBe(2)
+      expect(el.rotateDeg).toBe(90)
+      expect(el.grayscale).toBe(true)
+    })
+
+    it('reflects crop-export-mode attribute', async () => {
+      render(html`<pixel-pusher crop-export-mode="selection"></pixel-pusher>`, container)
+      const el = container.querySelector('pixel-pusher') as PixelPusher
+      await el.updateComplete
+      expect(el.cropExportMode).toBe('selection')
+    })
+
+    it('downscales cropped canvas via max-width after crop', async () => {
+      render(
+        html`<pixel-pusher headless aspect-ratio="1" max-width="800"></pixel-pusher>`,
+        container,
+      )
+      const el = container.querySelector('pixel-pusher') as PixelPusher
+      await el.updateComplete
+
+      const cropCanvas = document.createElement('canvas')
+      cropCanvas.width = 2000
+      cropCanvas.height = 2000
+
+      const cropperWindow = el.shadowRoot?.querySelector('cropper-window') as
+        | CropperWindow
+        | null
+      expect(cropperWindow).toBeTruthy()
+
+      vi.spyOn(cropperWindow!, 'open').mockImplementation(
+        (_file, _opts, deferred) => {
+          deferred.resolve(cropCanvas)
+        },
+      )
+
+      const file = createPngFile('crop-input.png')
+      const imageEdited = new Promise<CustomEvent<{ canvas: HTMLCanvasElement }>>(
+        (resolve) => {
+          el.addEventListener(
+            'image-edited',
+            (e) => resolve(e as CustomEvent<{ canvas: HTMLCanvasElement }>),
+            { once: true },
+          )
+        },
+      )
+
+      await el.selectFile(file)
+      const edited = await imageEdited
+      expect(edited.detail.canvas.width).toBe(800)
+      expect(edited.detail.canvas.height).toBe(800)
+    })
 
   describe('public selectFile / selectURL API', () => {
     it('exposes selectFile and selectURL as callable functions on the element', async () => {
