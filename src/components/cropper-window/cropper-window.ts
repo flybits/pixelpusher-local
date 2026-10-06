@@ -18,11 +18,39 @@ export type CropOptions = {
   cropExportMode?: CropExportMode
 }
 
+function cropperTemplate(aspectRatio?: number): string {
+  const ratioAttr = aspectRatio !== undefined && Number.isFinite(aspectRatio) && aspectRatio > 0
+    ? ` initial-aspect-ratio="${aspectRatio}"`
+    : ''
+
+  return `<cropper-canvas background>
+    <cropper-image scalable translatable initial-fit="contain"></cropper-image>
+    <cropper-shade hidden></cropper-shade>
+    <cropper-handle action="move" plain></cropper-handle>
+    <cropper-selection initial-coverage="0.5" movable resizable${ratioAttr}>
+      <cropper-grid role="grid" bordered covered></cropper-grid>
+      <cropper-crosshair centered></cropper-crosshair>
+      <cropper-handle action="move" theme-color="rgba(255, 255, 255, 0.35)"></cropper-handle>
+      <cropper-handle action="n-resize"></cropper-handle>
+      <cropper-handle action="e-resize"></cropper-handle>
+      <cropper-handle action="s-resize"></cropper-handle>
+      <cropper-handle action="w-resize"></cropper-handle>
+      <cropper-handle action="ne-resize"></cropper-handle>
+      <cropper-handle action="nw-resize"></cropper-handle>
+      <cropper-handle action="se-resize"></cropper-handle>
+      <cropper-handle action="sw-resize"></cropper-handle>
+    </cropper-selection>
+  </cropper-canvas>`
+}
+
 @customElement('cropper-window')
 export class CropperWindow extends LitElement {
   private modalWindowRef = createRef<ModalWindow>()
   private cropperWrapperRef = createRef<HTMLDivElement>()
   private cropper: Cropper | null = null;
+  private resizeObserver: ResizeObserver | null = null;
+  private imageReady = false;
+  private selectionCentered = false;
 
   private cropOpts: CropOptions | null = null;
   private file: File | null = null;
@@ -69,6 +97,10 @@ export class CropperWindow extends LitElement {
   }
 
   private _resetState() {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+    this.imageReady = false;
+    this.selectionCentered = false;
     this.cropper?.destroy();
     this.cropper = null;
     this.file = null;
@@ -81,16 +113,60 @@ export class CropperWindow extends LitElement {
   }
 
   private initCropper(img: HTMLImageElement) {
-    if(this.cropperWrapperRef.value){
+    const wrapper = this.cropperWrapperRef.value
+    if (!wrapper) return
 
-      this.cropper = new Cropper(img, {
-        container: this.cropperWrapperRef.value,
-      });
+    this.resizeObserver?.disconnect()
+    this.cropper?.destroy()
+    this.imageReady = false
+    this.selectionCentered = false
 
-      const cropSelection = this.cropper.getCropperSelection()
-      if (cropSelection && this.cropOpts?.aspectRatio) {
-        cropSelection.aspectRatio = this.cropOpts.aspectRatio
-      }
+    this.cropper = new Cropper(img, {
+      container: wrapper,
+      template: cropperTemplate(this.cropOpts?.aspectRatio),
+    })
+
+    void this._layoutCropper()
+
+    this.resizeObserver = new ResizeObserver(() => {
+      this._fitImage()
+    })
+    this.resizeObserver.observe(wrapper)
+  }
+
+  private async _layoutCropper() {
+    const cropper = this.cropper
+    const image = cropper?.getCropperImage()
+    if (!cropper || !image) return
+
+    try {
+      await image.$ready()
+    } catch {
+      return
+    }
+    if (this.cropper !== cropper) return
+    this.imageReady = true
+
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve())
+    })
+    if (this.cropper !== cropper) return
+
+    this._fitImage()
+  }
+
+  private _fitImage() {
+    if (!this.imageReady) return
+    const wrapper = this.cropperWrapperRef.value
+    const image = this.cropper?.getCropperImage()
+    if (!wrapper || !image || wrapper.clientWidth === 0 || wrapper.clientHeight === 0) return
+    const rect = image.getBoundingClientRect()
+    if (rect.width === 0 || rect.height === 0) return
+
+    image.$center('contain')
+    if (!this.selectionCentered) {
+      this.cropper?.getCropperSelection()?.$center()
+      this.selectionCentered = true
     }
   }
 
